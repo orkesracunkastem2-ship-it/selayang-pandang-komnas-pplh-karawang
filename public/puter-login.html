@@ -2,245 +2,304 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Puter Image Generator — Selayang Pandang</title>
+  <title>Puter.js Image Generator — Selayang Pandang</title>
   <style>
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#0b1326; color:#e6edf3; min-height:100vh; padding:2rem; }
-    .wrapper { max-width:940px; margin:0 auto; }
-    h1 { font-size:1.5rem; color:#f59e0b; margin-bottom:.4rem; }
-    .sub { color:#6b7280; font-size:.82rem; margin-bottom:1.5rem; line-height:1.5; }
-    button { display:inline-flex; align-items:center; gap:8px; background:#f59e0b; color:#0b1326; border:none; border-radius:10px; padding:12px 28px; font-size:.93rem; font-weight:700; cursor:pointer; margin-bottom:10px; margin-right:8px; transition:background 120ms; }
-    button:hover:not(:disabled) { background:#fbbf24; }
-    button:disabled { background:#374151; color:#6b7280; cursor:not-allowed; }
-    #status { margin:1rem 0; padding:12px 16px; border-radius:8px; font-size:.82rem; display:none; line-height:1.6; }
-    .ok  { background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3); color:#86efac; }
-    .err { background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
-    .info{ background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:#93c5fd; }
-
-    .model-bar { background:#162447; border:1px solid #2a3f6f; border-radius:8px; padding:10px 16px; margin-bottom:1.5rem; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .model-bar select { background:#0d1b2e; color:#e6edf3; border:1px solid #2a3f6f; border-radius:6px; padding:6px 12px; font-size:.85rem; }
-
-    #log { margin-top:1rem; font-family:'Courier New',monospace; font-size:.72rem; color:#374151; max-height:360px; overflow-y:auto; background:#0d1117; border:1px solid #1e3a5f; border-radius:8px; padding:12px; }
-    .log-ok { color:#86efac; } .log-err{ color:#fca5a5; } .log-info{ color:#93c5fd; }
-
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; margin-top:1rem; }
-    .card { background:#162447; border:1px solid #2a3f6f; border-radius:10px; padding:10px 12px; transition:border-color 120ms; }
-    .card.done { border-color:#22c55e; } .card.error{ border-color:#ef4444; } .card.wait{ border-color:#f59e0b; }
-    .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-    .card-num  { font-weight:700; color:#f59e0b; font-size:.75rem; }
-    .card-name { font-weight:700; font-size:.78rem; color:#e6edf3; }
-    .card-preview { width:100%; aspect-ratio:16/9; background:#0d1b2e; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:#374151; overflow:hidden; }
-    .card-preview img { width:100%; height:100%; object-fit:cover; }
-    .card-badge { font-size:.65rem; padding:2px 7px; border-radius:99px; margin-top:5px; display:inline-block; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0b1326;color:#e6edf3;min-height:100vh;padding:2rem}
+    .wrap{max-width:960px;margin:0 auto}
+    h1{font-size:1.5rem;color:#f59e0b;margin-bottom:.3rem}
+    .sub{color:#6b7280;font-size:.82rem;margin-bottom:1.2rem;line-height:1.5}
+    button{display:inline-flex;align-items:center;gap:8px;background:#f59e0b;color:#0b1326;border:none;border-radius:10px;padding:10px 22px;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:8px;margin-right:8px;transition:background 120ms}
+    button:hover:not(:disabled){background:#fbbf24}
+    button:disabled{background:#374151;color:#6b7280;cursor:not-allowed}
+    #status{margin:.8rem 0;padding:10px 14px;border-radius:8px;font-size:.8rem;display:none;line-height:1.6}
+    .ok{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#86efac}
+    .err{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+    .info{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);color:#93c5fd}
+    .bar{background:#162447;border:1px solid #2a3f6f;border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .bar select{background:#0d1b2e;color:#e6edf3;border:1px solid #2a3f6f;border-radius:6px;padding:6px 10px;font-size:.82rem}
+    #log{margin-top:.8rem;font-family:'Courier New',monospace;font-size:.7rem;color:#374151;max-height:340px;overflow-y:auto;background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:10px}
+    .lo{color:#86efac}.le{color:#fca5a5}.li{color:#93c5fd}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:.8rem}
+    .card{background:#162447;border:1px solid #2a3f6f;border-radius:10px;padding:10px 12px}
+    .card.done{border-color:#22c55e}.card.er{border-color:#ef4444}.card.wn{border-color:#f59e0b}
+    .ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+    .cn{font-weight:700;color:#f59e0b;font-size:.72rem}
+    .cl{font-weight:700;font-size:.76rem;color:#e6edf3}
+    .cp{width:100%;aspect-ratio:16/9;background:#0d1b2e;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#374151;overflow:hidden}
+    .cp img{width:100%;height:100%;object-fit:cover}
+    .cb{font-size:.62rem;padding:2px 6px;border-radius:99px;margin-top:4px;display:inline-block}
   </style>
 </head>
 <body>
-<div class="wrapper">
-  <h1>🎬 Puter.js — Image Generator</h1>
-  <p class="sub">Selayang Pandang DPD Komnas PPLH Karawang · 5 Scenes + 25 Shot Reference</p>
+<div class="wrap">
+  <h1>🎬 Puter.js — Free Image Generator</h1>
+  <p class="sub">Selayang Pandang DPD Komnas PPLH Karawang · 26 Shot Reference + 5 Scenes</p>
 
   <button id="loginBtn" onclick="doLogin()">🔐 Login Puter</button>
-  <button id="listBtn"  onclick="doListModels()" disabled>📋 List Model</button>
-  <button id="genBtn"   onclick="doGenerate()" disabled>🎨 Generate All</button>
-
+  <button id="loadBtn"  onclick="doLoadModels()" disabled>📋 Load Models</button>
   <div id="status"></div>
-  <div class="model-bar" id="modelBar" style="display:none">
-    <span style="font-size:.8rem;color:#9ca3af">Model:</span>
+  <div class="bar" id="modelBar" style="display:none">
+    <span style="font-size:.78rem;color:#9ca3af">Model:</span>
     <select id="modelSelect"></select>
-    <button onclick="doGenerate()" id="modelGenBtn" style="font-size:.82rem;padding:8px 18px">▶ Generate</button>
+    <span id="modelHint" style="font-size:.72rem;color:#6b7280"></span>
+    <button id="genBtn" onclick="doGenerate()" disabled>▶ Generate All</button>
   </div>
   <div id="log"></div>
-  <div class="grid" id="output"></div>
+  <div class="grid" id="grid"></div>
 </div>
 
 <script src="https://js.puter.com/v2/"></script>
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-// PROMPTS — 5 SCENES + 25 SHOT REFERENCE
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROMPTS — 26 SHOT REFERENCE + 5 CINEMATIC SCENES
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const SCENES = [
-  { id:'SCENE-01', label:'PEMBUKA',              prompt:'Cinematic aerial golden hour establishing shot of Karawang West Java, endless green rice fields in foreground and distant factories glowing amber orange, dramatic god rays in sunset sky, teal and amber colour grade, slow drone aerial cinematic wide shot, film still photorealistic 8K ultra-detailed, no text' },
-  { id:'SCENE-02', label:'DATA & FAKTA',          prompt:'Futuristic editorial cinematic data visualization of 2.6 million population and 1500 tons daily garbage crisis: giant amber neon number 2600000 and stylised overflowing garbage truck with 1500 TON in bold red, dark navy minimalist background, warm orange bokeh particles floating, editorial documentary 4K' },
-  { id:'SCENE-03', label:'TPA JALUPANG',          prompt:'Cinematic aerial wide drone shot of massive overflowing garbage landfill in Karawang Indonesia, mountains of colourful plastic and refuse stretching to horizon, hazy overcast grey sky storm approaching, smoke haze, slow descending drone movement, desaturated cold colour grade, urban decay documentary wide shot 8K, no people' },
-  { id:'SCENE-04', label:'DAMPAK',                prompt:'Cinematic aerial wide documentary landscape shot of wide river surface with scattered floating refuse and plastic debris, small wooden boat in mid-distance navigating the waterway, overcast sky with scattered clouds, cool desaturated colour grade, environmental documentary cinematic 8K, no people' },
-  { id:'SCENE-05', label:'PENUTUP',               prompt:'Cinematic warm hopeful golden hour documentary of Indonesian community waste bank solution Karawang: local villagers sorting plastic recyclables at bank sampah waste bank, green plants and golden morning sunlight, warm orange and green colour grading, uplifting inspirational cinematic mood, photorealistic 4K, no text' },
+  {id:'SCENE-01',lbl:'PEMBUKA',     prompt:'Cinematic aerial golden hour establishing shot of Karawang West Java, endless green rice fields in foreground, distant industrial factories glowing amber orange, dramatic god rays in warm sunset sky, teal and amber colour grade, slow drone aerial wide shot, film still photorealistic 8K ultra-detailed'},
+  {id:'SCENE-02',lbl:'DATA & FAKTA', prompt:'Futuristic editorial data visualization 2.6M population plus 1500 tons daily garbage crisis: giant amber neon number 2600000 above stylized overflowing garbage truck with bold red 1500 TON text label on dark navy background, warm orange bokeh particles floating, editorial documentary 4K'},
+  {id:'SCENE-03',lbl:'TPA JALUPANG', prompt:'Cinematic aerial wide drone shot of massive overflowing garbage landfill in Karawang, mountains of colourful plastic refuse stretching to horizon, hazy overcast grey sky, storm approaching, slow descending drone, desaturated cold grade, urban decay documentary wide 8K, no people'},
+  {id:'SCENE-04',lbl:'DAMPAK',       prompt:'Cinematic aerial wide documentary: wide Indonesian river with scattered floating refuse and plastic debris, small wooden boat navigating mid-distance, overcast sky, cool desaturated colour grade, environmental landscape documentary 8K, no people'},
+  {id:'SCENE-05',lbl:'PENUTUP',      prompt:'Cinematic warm hopeful golden hour: Indonesian community waste bank bank sampah in Karawang, villagers sorting plastic recyclables, green plants and morning golden sunlight, warm orange and green grading, uplifting inspirational mood, photorealistic 4K'},
 ];
 
 const SHOTS = [
-  { id:'SR-01', label:'Logo Open — Navy Black',               scene:'PEMBUKA',     prompt:'Minimal cinematic opening title card still: deep navy matte background, centred bold white condensed text KOMNAS PPLH KARAWANG, soft inner glow around letters, 16:9 letterbox framing, no decoration no pattern, 4K film opening still' },
-  { id:'SR-02', label:'Aerial Est. Karawang',                 scene:'PEMBUKA',     prompt:'Cinematic aerial golden hour establishing shot of Karawang West Java: endless green rice fields in foreground, distant industrial factories glowing amber orange in distance, dramatic god rays in warm sunset sky, teal and amber colour grade, slow drone aerial wide shot, 8K film still ultra-detailed' },
-  { id:'SR-03', label:'Timelapse Skyline',                    scene:'PEMBUKA',     prompt:'Cinematic time-lapse of Karawang city skyline transitioning from blue hour to golden hour, city traffic creating light-trail streaks along roadways, distant mountain ridge silhouette, warm-cool dual tone colour grading, 4K timelapse style still' },
-  { id:'SR-04', label:'Handheld Waste Drop',                  scene:'PEMBUKA',     prompt:'Slow motion 60fps B-roll still: anonymous hands tossing crumpled plastic waste into overflowing public trash bin, warm afternoon ambient light, shallow depth of field, warm colour grade, urban documentary style 4K, no face visible' },
-  { id:'SR-05', label:'Title Card — Darurat Sampah',          scene:'PEMBUKA',     prompt:'Bold cinematic title typography card still: massive bold condensed white text DARURAT SAMPAH KARAWANG centred on solid matte black background, thin amber red accent rule below text, film poster aesthetic, no clutter, 4K' },
-  { id:'SR-06', label:'Infographic 2.6M',                     scene:'DATA & FAKTA',prompt:'Cinematic editorial infographic still: giant floating amber neon number 2600000 on dark navy background, tiny stylised garbage truck icon at lower right, warm bokeh particles floating in air, shallow depth of field, editorial photorealistic 4K' },
-  { id:'SR-07', label:'Infographic 1500 ton',                 scene:'DATA & FAKTA',prompt:'Cinematic dramatic editorial infographic still: giant bold red text 1.500 TON-HARI on dark navy background with subtle red motion-blur vibration effect as if the number is overwhelming, warm bokeh orange particles, editorial documentary 4K' },
-  { id:'SR-08', label:'Close-up Dumpster',                    scene:'DATA & FAKTA',prompt:'Close-up documentary still: interior of overflowing public refuse bin with piled mixed plastic and paper, half-light from street lamp above, shallow depth of field, cool desaturated colour, 4K texture documentary still' },
-  { id:'SR-09', label:'Truck Convoy Entrance',                scene:'DATA & FAKTA',prompt:'Cinematic wide shot: convoy of overloaded refuse lorries queuing on muddy access road at landfill entrance, multiple lorries stretching into background, desaturated blue-grey cool colour, news documentary aerial-lens aesthetic, no faces 4K' },
-  { id:'SR-10', label:'Street Overflow',                      scene:'DATA & FAKTA',prompt:'Cinematic street documentary wide shot: person walking past row of overflowing refuse bins on residential sidewalk, apartment buildings in background, desaturated colour, urban documentary 4K, cinematic wide shot' },
-  { id:'SR-11', label:'Title Card — TPA Jalupang',            scene:'TPA JALUPANG', prompt:'Cinematic title card still: bold white text SEBAGIAN BESAR BERAKHIR DI TPA JALUPANG centred on semi-transparent dark navy bar at bottom of frame, dark aerial background, documentary title card style 4K, no clutter' },
-  { id:'SR-12', label:'Aerial Wide TPA',                      scene:'TPA JALUPANG', prompt:'Cinematic aerial drone ultrawide shot of Karawang garbage landfill TPA Jalupang, mountains of colourful compacted plastic refuse stretching to horizon line, hazy overcast grey sky, distant smoke haze, slow descending drone movement, cinematic wide still photorealistic 8K, no people' },
-  { id:'SR-13', label:'Flyover TPA Section',                  scene:'TPA JALUPANG', prompt:'Cinematic drone tracking flyover of compacted refuse mountains layered in rainbow coloured plastic material, dramatic grey stormy sky overhead with approaching storm, cinematic wide drone footage style, photorealistic 8K, no people' },
-  { id:'SR-14', label:'Macro Texture',                        scene:'TPA JALUPANG', prompt:'Cinematic macro close-up texture still: surface of decomposing refuse pile showing layered plastic sheets, food containers and packaging, golden side afternoon sunlight catching on every edge, shallow depth of field, documentary environmental detail, 4K' },
-  { id:'SR-15', label:'Leachate Drainage',                    scene:'TPA JALUPANG', prompt:'Cinematic slow sideways tracking shot: dark wastewater seeping from compacted refuse pile along muddy drainage channel, slow tracking camera movement, overcast natural daylight, cool desaturated colour grade, documentary environmental wide 4K, no people' },
-  { id:'SR-16', label:'Resident Portrait TPA',                scene:'TPA JALUPANG', prompt:'Cinematic medium portrait: anonymous local community resident in casual clothing and cloth face mask, expression of concern, standing near refuse perimeter, dramatic overcast side light, shallow depth of field, no identifying features, documentary 4K' },
-  { id:'SR-17', label:'Truck Tip Action',                     scene:'TPA JALUPANG', prompt:'Cinematic frozen action still: refuse lorry tipping fresh load at disposal point, refuse frozen mid-air landing on refuse mountain, dust-laden air catching daylight, dramatic grey overcast sky, documentary frozen moment 4K, no faces' },
-  { id:'SR-18', label:'Night Smoke Fire',                     scene:'TPA JALUPANG', prompt:'Cinematic wide low-light night shot: small fire burning at landfill refuse edge producing warm orange glow into dark overcast sky, foreground weathered concrete ground with refuse debris, long exposure low-light aesthetic, moody cinematic 4K' },
-  { id:'SR-19', label:'Interview Portrait',                    scene:'TPA JALUPANG', prompt:'Cinematic documentary interview portrait style: community member in casual clothing and cloth face mask standing before dark landfill backdrop, natural overcast diffused side light, muted desaturated colour, no identifying features, documentary portrait 4K' },
-  { id:'SR-20', label:'Urban Drainage Street',                 scene:'DAMPAK',        prompt:'Cinematic urban landscape shot: street-level view of drainage canal lined with floating plastic refuse, multi-storey buildings in background, overcast natural light, desaturated cool colour grade, urban documentary still photorealistic 4K' },
-  { id:'SR-21', label:'Rainy Street Overflow',                 scene:'DAMPAK',        prompt:'Cinematic street shot at golden hour: narrow residential street with rain-slicked asphalt and overflowing curbside bins spilling refuse, warm yellow sodium street-lamp glow, shallow puddles reflecting surrounding lights, moody atmospheric cinematic 4K' },
-  { id:'SR-22', label:'Aerial River Establishing',             scene:'DAMPAK',        prompt:'Cinematic aerial wide establishing landscape shot: wide river surface dotted with floating refuse and scattered debris, small wooden cargo boat in distance navigating between patches, high-contrast aerial composition, environmental documentary 4K landscape' },
-  { id:'SR-23', label:'Children Golden Hour',                  scene:'DAMPAK',        prompt:'Cinematic golden hour still: two people carrying woven baskets walking along quiet residential street edge, long soft warm shadows cast by setting sun, peaceful tableau post-credits aesthetic, warm soft golden light, photorealistic 4K' },
-  { id:'SR-24', label:'Night Smoke Industrial',               scene:'DAMPAK',        prompt:'Cinematic wide night shot: distant industrial facility at refuse site edge emitting faint orange glow into dark sky visible from residential area in foreground, weathered concrete road and patchy grass, long light trail, moody cinematic 4K' },
-  { id:'SR-25', label:'Resident Portrait Dampak',              scene:'DAMPAK',        prompt:'Cinematic environmental portrait still: community resident wearing cloth face mask near industrial zone perimeter boundary, midday harsh sun casting sharp shadows, shallow depth of field, no identifying features, documentary photography style 4K' },
+  {id:'SR-01', lbl:'Logo Open',            sc:'PEMBUKA',     prompt:'Minimal cinematic opening title card: deep navy matte background, centred bold white condensed text KOMNAS PPLH KARAWANG, soft inner glow, 16:9 letterbox, no decoration, film opening still 4K'},
+  {id:'SR-02', lbl:'Aerial Est.',           sc:'PEMBUKA',     prompt:'Cinematic aerial golden hour establishing Karawang West Java: endless green rice fields, distant factories glowing amber, warm sunset sky, dramatic god rays, teal and amber colour grade, slow drone wide 8K film still'},
+  {id:'SR-03', lbl:'Timelapse',             sc:'PEMBUKA',     prompt:'Cinematic time-lapse Karawang skyline blue hour to golden hour transition, traffic light-trail streaks along roadways, mountain ridge silhouette, warm-cool dual tone colour grade, 4K timelapse still'},
+  {id:'SR-04', lbl:'Handheld Waste Drop',   sc:'PEMBUKA',     prompt:'Slow motion B-roll still: anonymous hands tossing crumpled plastic waste into overflowing public bin, warm afternoon ambient light, shallow depth of field, urban documentary style 4K, no face'},
+  {id:'SR-05', lbl:'Title Darwin Sampah',   sc:'PEMBUKA',     prompt:'Bold cinematic typography title card: massive bold condensed white text DARURAT SAMPAH KARAWANG centred on solid matte black background, thin amber accent rule below, film poster style, no clutter 4K'},
+  {id:'SR-06', lbl:'Infographic 2.6M',      sc:'DATA & FAKTA',prompt:'Cinematic editorial infographic still: giant amber neon number 2600000 on dark navy background, tiny truck icon at lower right, warm bokeh particles, shallow depth of field editorial 4K'},
+  {id:'SR-07', lbl:'Infographic 1500 ton',  sc:'DATA & FAKTA',prompt:'Cinematic dramatic editorial infographic: giant bold red text 1.500 TON-HARI on dark navy background, subtle red vibration motion blur as if overwhelming, warm bokeh, ediorial 4K'},
+  {id:'SR-08', lbl:'Close-up Dumpster',     sc:'DATA & FAKTA',prompt:'Close-up documentary still: overflowing refuse bin interior, piled mixed plastic and paper waste, half-light from street lamp above, shallow DOF, cool desaturated colour 4K texture'},
+  {id:'SR-09', lbl:'Truck Convoy',          sc:'DATA & FAKTA',prompt:'Cinematic wide shot: convoy of overloaded refuse lorries queuing on muddy road at landfill entrance, multiple lorries into background, desaturated blue-grey cool colour, aerial documentary news aesthetic 4K'},
+  {id:'SR-10', lbl:'Street Overflow',       sc:'DATA & FAKTA',prompt:'Cinematic street wide documentary: person walking past overflowing refuse bins on residential sidewalk, apartment buildings in background, desaturated colour, urban documentary wide 4K'},
+  {id:'SR-11', lbl:'Title TPA Jalupang',    sc:'TPA JALUPANG', prompt:'Cinematic title card still: bold white text SEBAGIAN BESAR BERAKHIR DI TPA JALUPANG centred on semi-transparent dark navy bar at bottom frame, dark aerial background, documentary title card 4K'},
+  {id:'SR-12', lbl:'Aerial Wide TPA',       sc:'TPA JALUPANG', prompt:'Cinematic aerial drone ultrawide shot of Karawang garbage landfill TPA Jalupang, mountains of colourful compacted refuse stretching to horizon, hazy overcast sky, smoke haze, slow descending drone, 8K photorealistic'},
+  {id:'SR-13', lbl:'Flyover TPA Layer',     sc:'TPA JALUPANG', prompt:'Cinematic drone flyover tracking: compacted refuse mountains in rainbow layers, dramatic grey stormy sky overhead, storm approaching horizon, drone footage aesthetic, photorealistic 8K'},
+  {id:'SR-14', lbl:'Macro Texture',         sc:'TPA JALUPANG', prompt:'Cinematic macro texture still: surface of decomposing refuse pile showing layered plastic sheets and food packaging, golden afternoon sunlight on edges, shallow DOF, environmental documentary detail 4K'},
+  {id:'SR-15', lbl:'Leachate Drainage',     sc:'TPA JALUPANG', prompt:'Cinematic slow sideways tracking: dark wastewater seeping from refuse pile along muddy drainage channel, overcast natural light, cool desaturated colour grade, documentary environmental 4K'},
+  {id:'SR-16', lbl:'Resident Portrait TPA', sc:'TPA JALUPANG', prompt:'Cinematic medium portrait: anonymous local resident in casual clothing and face mask, expression of concern, standing near refuse perimeter, dramatic overcast side light, shallow DOF, no identifying features 4K'},
+  {id:'SR-17', lbl:'Truck Tip Action',      sc:'TPA JALUPANG', prompt:'Cinematic frozen action still: refuse lorry tipping fresh load at disposal point, refuse frozen mid-air over refuse mountain, dust in daylight, dramatic grey overcast sky, documentary frozen moment 4K'},
+  {id:'SR-18', lbl:'Night Fire Edge',       sc:'TPA JALUPANG', prompt:'Cinematic wide low-light night: small fire burning at landfill refuse edge producing warm orange glow into dark overcast sky, weathered ground debris foreground, long exposure aesthetic, moody cinematic 4K'},
+  {id:'SR-19', lbl:'Interview Portrait',    sc:'TPA JALUPANG', prompt:'Cinematic documentary interview portrait: community member in casual clothes and face mask before landfill backdrop, natural overcast diffused side light, muted desaturated colour, no identifying features portrait 4K'},
+  {id:'SR-20', lbl:'Urban Drainage',        sc:'DAMPAK',        prompt:'Cinematic urban landscape: street-level drainage canal lined with floating refuse material, multi-storey building silhouettes in background on both banks, overcast natural light, desaturated cool colour, documentary still 4K'},
+  {id:'SR-21', lbl:'Rainy Street Overflow', sc:'DAMPAK',        prompt:'Cinematic street shot golden hour: narrow Indonesian residential street with rain-slicked asphalt, overflowing curbside bins spilling refuse, warm yellow sodium street lamp glow, shallow puddles, moody atmospheric 4K'},
+  {id:'SR-22', lbl:'Aerial River Est.',     sc:'DAMPAK',        prompt:'Cinematic aerial wide landscape: wide river surface dotted with floating refuse and scattered debris, small wooden cargo boat mid-distance navigating between patches, high contrast aerial composition, environmental documentary 4K'},
+  {id:'SR-23', lbl:'Children Golden Hour',  sc:'DAMPAK',        prompt:'Cinematic golden hour still: people carrying woven baskets walking along quiet residential street edge, long warm shadow from setting sun, peaceful tableau with warm soft golden light, photorealistic cinematic 4K'},
+  {id:'SR-24', lbl:'Night Smoke Industry',  sc:'DAMPAK',        prompt:'Cinematic wide night shot: distant industrial facility at refuse site edge emitting faint orange haze glow into dark sky visible from residential area in foreground, weathered concrete road and grass, moody cinematic 4K'},
+  {id:'SR-25', lbl:'Portrait Dampak',       sc:'DAMPAK',        prompt:'Cinematic environmental portrait still: community resident wearing cloth face mask near industrial zone perimeter boundary, midday harsh sunlight, shallow DOF, no identifying features documentary photography 4K'},
 ];
 
-// ══════════════════════════════════════════════════════════════════════════════
-let loggedIn=false, results=[], modelList=[];
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODEL NAME REMAP — what listModels returns  →  what txt2img accepts
+// Source: https://developer.puter.com/tutorials/free-unlimited-gpt-image-api/
+// ═══════════════════════════════════════════════════════════════════════════════
+const MODEL_REMAP = {
+  // OpenRouter returns these as IDs — strip provider/prefix and remap
+  'openrouter:openai/gpt-5-image':    'gpt-image-2',
+  'openrouter:openai/gpt-5.4-image-2':'gpt-image-2',
+  'openrouter:openai/gpt-5.3-image':  'gpt-image-2',
+  'openrouter:openai/gpt-5-image-mini':'gpt-image-1-mini',
+  'openrouter:openai/gpt-image-2':    'gpt-image-2',
+  'openrouter:openai/gpt-image-1.5':  'gpt-image-1.5',
+  'openrouter:openai/gpt-image-1':    'gpt-image-1',
+  'openrouter:openai/gpt-image-1-mini':'gpt-image-1-mini',
+  'openrouter:openai/dall-e-3':       'dall-e-3',
+  'openrouter:google/gemini-2.5-flash-image-preview':'gemini-2.5-flash-image-preview',
+  'openrouter:google/gemini-3.1-flash-image-preview':'gemini-2.5-flash-image-preview',
+  'openrouter:google/gemini-3-pro-image-preview':   'gemini-3-pro-image-preview',
+  'openrouter:google/gemini-2.0-flash-image-preview':'gemini-2.5-flash-image-preview',
+  // Strip-only fallback: remove prefix + provider/
+  'openrouter:google/gemini-2.0-flash-image':       'gemini-2.5-flash-image-preview',
+  'openrouter:google/gemini-2.5-flash-image':         'gemini-2.5-flash-image-preview',
+};
+// Fallback: strip everything up to "/" and "openrouter:" prefix if not in map
+function normalizeModel(rawId) {
+  rawId = (rawId || '').replace(/^openrouter:/,'');
+  // google/gemini-... → gemini-...
+  if (rawId.startsWith('google/')) rawId = rawId.replace(/^google\//,'');
+  // Remove trailing .0
+  rawId = rawId.replace(/\.0$/, '');
+  // Handle gemini-3-pro → gemini-3-pro-image-preview (txt2img needs image models)
+  if (rawId === 'gemini-3-pro-image') rawId = 'gemini-3-pro-image-preview';
+  if (rawId === 'gemini-3-flash-image') rawId = 'gemini-2.5-flash-image-preview';
+  return rawId;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+let loggedIn=false, results=[], modelEntries=[];
+
 const loginBtn    = document.getElementById('loginBtn');
-const listBtn     = document.getElementById('listBtn');
+const loadBtn     = document.getElementById('loadBtn');
 const genBtn      = document.getElementById('genBtn');
 const modelSelect = document.getElementById('modelSelect');
 const modelBar    = document.getElementById('modelBar');
-const genBtnBar   = document.getElementById('modelGenBtn');
+const modelHint   = document.getElementById('modelHint');
 const statusDiv   = document.getElementById('status');
 const logDiv      = document.getElementById('log');
-const outputDiv   = document.getElementById('output');
+const gridDiv     = document.getElementById('grid');
 
-function log(msg,type='info'){const e=document.createElement('div');e.className='log-'+type;e.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;logDiv.appendChild(e);logDiv.scrollTop=logDiv.scrollHeight;}
-function showStatus(m,t='info'){statusDiv.textContent=m;statusDiv.className=t;statusDiv.style.display='block';}
+function log(m,t='i'){const e=document.createElement('div');e.className='l'+t;e.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;logDiv.appendChild(e);logDiv.scrollTop=logDiv.scrollHeight}
+function ss(m,t='i'){statusDiv.textContent=m;statusDiv.className=t;statusDiv.style.display='block'}
 
 function renderCards(){
-  outputDiv.innerHTML='';
+  gridDiv.innerHTML='';
   [...SCENES,...SHOTS].forEach(it=>{
-    outputDiv.innerHTML+=`<div class="card" id="card-${it.id}">
-<div class="card-head"><span class="card-num">${it.id}</span><span class="card-name">${it.label}</span></div>
-<div style="font-size:.65rem;color:#6b7280;margin-bottom:5px">${it.scene}</div>
-<div class="card-preview" id="img-${it.id}">🎬</div>
-<span class="card-badge" style="background:#1e3a5f;color:#93c5fd" id="badge-${it.id}">waiting</span>
+    gridDiv.innerHTML += `<div class="card" id="card-${it.id}">
+<div class="ch"><span class="cn">${it.id}</span><span class="cl">${it.lbl}</span></div>
+<div style="font-size:.6rem;color:#6b7280;margin-bottom:4px">${it.sc}</div>
+<div class="cp" id="img-${it.id}">🎬</div>
+<span class="cb" style="background:#1e3a5f;color:#93c5fd" id="b-${it.id}">idle</span>
 </div>`;
   });
-  log('✓ Rendered '+ (SCENES.length+SHOTS.length) +' cards.');
+  log('✓ Rendered '+(SCENES.length+SHOTS.length)+' cards.','o');
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
 // LOGIN
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
 async function doLogin(){
-  loginBtn.disabled=true;loginBtn.textContent='⏳ Opening popup…';log('signIn()…');
+  loginBtn.disabled=true;loginBtn.textContent='⏳ Opening popup…';log('auth.signIn()…');
   try{
-    const res=await puter.auth.signIn();
-    log('✅ Login SUCCESS!','ok');
-    loggedIn=true;loginBtn.textContent='✅ Logged in';listBtn.disabled=false;
-    showStatus('✅ Login ok! Next: List Model.','ok');
+    const r = await puter.auth.signIn();
+    log('✅ Login OK! token='+String(r.token||r).slice(0,50),'o');
+    loggedIn=true;loginBtn.textContent='✅ Logged in';loadBtn.disabled=false;
+    ss('✅ Login ok! Klik "Load Models" bagian bawah.','o');
   }catch(e){
-    log('❌ '+e.message,'err');showStatus('❌ '+e.message,'err');
+    log('❌ '+e.message,'e');ss('❌ Login fail: '+e.message,'e');
     loginBtn.disabled=false;loginBtn.textContent='🔐 Login (retry)';
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// LIST MODELS — strip openrouter: prefix for txt2img()
-// ══════════════════════════════════════════════════════════════════════════════
-async function doListModels(){
-  listBtn.disabled=true;listBtn.textContent='⏳ Loading…';log('ai.listModels()…');
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOAD + NORMALIZE MODELS
+// docs: https://developer.puter.com/tutorials/free-unlimited-gpt-image-api/
+// ═══════════════════════════════════════════════════════════════════════════════
+async function doLoadModels(){
+  loadBtn.disabled=true;loadBtn.textContent='⏳…';log('ai.listModels()…');
   try{
-    const models = await puter.ai.listModels();
-    // strip "openrouter:" prefix
-    const imgIds = [...new Set(
-      models
-        .filter(m => m.kind==='image' || /(image|dall|gpt.?image|imagen|stable)/i.test(m.id||''))
-        .map(m => (m.id||'').replace(/^openrouter:/,''))
-    )];
+    const rawModels = await puter.ai.listModels();
+    log('listModels() returned '+rawModels.length+' models.','i');
 
-    if(!imgIds.length){
-      log('WARN: no image models found','warn');
-      showStatus('⚠️ Tidak ada image model terdeteksi. Coba generate dengan default.','warn');
-    } else {
-      modelSelect.innerHTML='';
-      imgIds.forEach(id => {
-        const opt=document.createElement('option');opt.value=id;opt.textContent=id;
-        modelSelect.appendChild(opt);
-      });
-      modelBar.style.display='flex';
-      if(genBtnBar) genBtnBar.disabled=false;
-      log('✓ Found image models:','ok');imgIds.forEach(i=>log('  '+i));
-      showStatus('✓ Pilih model, lalu klik Generate.','ok');
+    // Step 1: forward-map using MODEL_REMAP, Step 2: try normalizeModel
+    const seen = new Set();
+    modelEntries = [];
+
+    for (const m of rawModels) {
+      const rid = (m && m.id) || '';
+      // try explicit remap first
+      let name = MODEL_REMAP[rid];
+      // if not in map, normalize it
+      if (!name) name = normalizeModel(rid);
+      // only keep plausible image model names
+      if (!name) continue;
+      if (!/(gpt-image|dall-e|gemini|stable|flux|imagen|seedream)/i.test(name)) continue;
+      if (seen.has(name)) continue;
+      seen.add(name);
+      modelEntries.push({ rawId: rid, name });
     }
-    modelList=imgIds; genBtn.disabled=false;
-    listBtn.textContent='✅ Loaded';listBtn.disabled=false;
+
+    // fallback: inject known good model names anyway (they cost nothing to try)
+    ['gpt-image-2','gpt-image-1.5','gemini-2.5-flash-image-preview','gemini-3-pro-image-preview','dall-e-3'].forEach(name=>{
+      if (!seen.has(name)) modelEntries.push({ rawId:'[known-good]', name });
+    });
+
+    if (!modelEntries.length) {
+      log('WARN: no image models — using free fallback.','e');
+    }
+
+    modelSelect.innerHTML = '';
+    modelEntries.forEach(e => {
+      const o = document.createElement('option');
+      o.value = e.name;
+      o.textContent = e.name + (e.rawId !== '[known-good]' ? ' ✓' : ' (try)');
+      modelSelect.appendChild(o);
+    });
+
+    modelBar.style.display='flex';
+    genBtn.disabled=false;
+    modelHint.textContent = modelEntries.length + ' model(s) ready · User-paid via Puter';
+
+    log('✓ Image models ready to use:','o');
+    modelEntries.forEach(e => log('   '+e.name));
+    ss('✓ '+modelEntries.length+' model(s) loaded. Pilih model, klik "Generate All".','o');
+    loadBtn.textContent='✅ Models loaded';
+    loadBtn.disabled=false;
   }catch(e){
-    log('❌ listModels: '+e.message,'err');listBtn.disabled=false;listBtn.textContent='📋 Retry';
+    log('❌ listModels error: '+e.message,'e');
+    ss('❌ Error loading models, retry.','e');
+    loadBtn.disabled=false;loadBtn.textContent='📋 Retry';
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// GENERATE ONE
-// ══════════════════════════════════════════════════════════════════════════════
-async function generateOne(item){
-  const card=document.getElementById('card-'+item.id);
-  const imgEl=document.getElementById('img-'+item.id);
-  const badge=document.getElementById('badge-'+item.id);
-  if(card)card.className='card wait';if(imgEl)imgEl.textContent='⏳';
-  if(badge){badge.textContent='generating…';badge.style.background='#1e3a5f';badge.style.color='#93c5fd';}
-  log('→ ['+item.id+'] '+item.label);
+// ═══════════════════════════════════════════════════════════════════════════════
+// GENERATE
+// ═══════════════════════════════════════════════════════════════════════════════
+async function genOne(it){
+  const card=document.getElementById('card-'+it.id);
+  const img =document.getElementById('img-'+it.id);
+  const bdg =document.getElementById('b-'+it.id);
+  if(card)card.className='card wn';if(img)img.textContent='⏳';
+  if(bdg){bdg.textContent='gen…';bdg.style.cssText='font-size:.62rem;padding:2px 6px;border-radius:99px;margin-top:4px;display:inline-block;background:#1e3a5f;color:#93c5fd'}
 
   const model = modelSelect.value || '';
-  try{
-    const opts = model ? { model } : { testMode:true };
-    const img  = await puter.ai.txt2img(item.prompt, opts);
-    const url  = img.src || img.href || '';
+  const opts  = { model };
+  log('▶ ['+it.id+'] '+it.lbl+' model='+model);
 
-    // Determine nema files if no aspect-ratio metadata
-    if(url) {
-      imgEl.innerHTML = `<img src="${url}" alt="${item.id}" loading="lazy" crossorigin="anonymous">`;
-      if(card) card.className = 'card done';
-      if(badge) { badge.textContent='✓ done'; badge.style.background='#14532d'; badge.style.color='#86efac'; }
-      log('✅ ['+item.id+'] OK — '+url.slice(0,60),'ok');
-      return { id:item.id, label:item.label, scene:item.scene, url };
+  try{
+    const res = await puter.ai.txt2img(it.prompt, opts);
+    const url = res?.src || res?.href || '';
+    if(url){
+      img.innerHTML='<img src="'+url+'" alt="'+it.id+'" loading="lazy" crossorigin="anonymous">';
+      if(card)card.className='card done';
+      if(bdg){bdg.textContent='✓ done';bdg.style.cssText='font-size:.62rem;padding:2px 6px;border-radius:99px;margin-top:4px;display:inline-block;background:#14532d;color:#86efac'}
+      log('✓ ['+it.id+'] '+url.slice(0,60),'o');
+      return {id:it.id,lbl:it.lbl,sc:it.sc,url};
     }
-    log('⚠️ ['+item.id+'] no url — '+JSON.stringify(img).slice(0,100),'warn');
-    return { id:item.id, label:item.label, scene:item.scene, error:'no url' };
+    log('⚠️ no url: '+JSON.stringify(res).slice(0,80),'i');
+    return {id:it.id,lbl:it.lbl,sc:it.sc,error:'no url'};
   }catch(e){
-    if(card) card.className='card error';if(imgEl)imgEl.textContent='❌';
-    if(badge){badge.textContent='ERR';badge.style.background='#7f1d1d';badge.style.color='#fca5a5';}
-    log('❌ ['+item.id+'] '+e.message,'err');
-    return { id:item.id, label:item.label, scene:item.scene, error:e.message };
+    if(card)card.className='card er';if(img)img.textContent='❌';
+    if(bdg){bdg.textContent='ERR';bdg.style.cssText='font-size:.62rem;padding:2px 6px;border-radius:99px;margin-top:4px;display:inline-block;background:#7f1d1d;color:#fca5a5'}
+    log('❌ ['+it.id+'] '+e.message,'e');
+    return {id:it.id,lbl:it.lbl,sc:it.sc,error:e.message};
   }
 }
 
 async function doGenerate(){
-  genBtn.disabled=true;genBtnBar.disabled=true;showStatus('🎨 Generating — this may take 5–20 mins','info');
-  log('=== Start batch generation ===');results=[];
-  const all=[...SCENES,...SHOTS],total=all.length;
-  log('Total: '+total+' prompts ('+SCENES.length+' scenes, '+SHOTS.length+'shot refs)');
-  for(let i=0;i<total;i++){
-    const res=await generateOne(all[i]);
+  genBtn.disabled=true;ss('🎨 Generating — 30 images, bisa 5–20 menit…','i');
+  log('=== BATCH START ===');results=[];
+  const all=[...SCENES,...SHOTS],N=all.length;
+  log('Total: '+N+' prompts over selected model: '+(modelSelect.value||'default'),'i');
+
+  for(let i=0;i<N;i++){
+    const res=await genOne(all[i]);
     results.push(res);
-    if(i<total-1) await new Promise(r=>setTimeout(r,1500));
+    if(i<N-1) await new Promise(r=>setTimeout(r,1800));
   }
   const ok=results.filter(r=>r.url).length;
-  log('\n=== DONE: '+ok+'/'+total+' images generated ===','ok');
-  showStatus('✅ '+ok+'/'+total+' done! Klik "Download JSON" bawah.','ok');
+  log('\n=== DONE: '+ok+'/'+N+' images generated ===','o');
+  ss('✅ '+ok+'/'+N+' gambar berhasil! Klik tombol Download bawah.','o');
 
-  // Auto-download JSON button
+  // Auto-download
   if(!document.getElementById('dlBtn')){
     const dl=document.createElement('button');
-    dl.id='dlBtn';dl.textContent='📥 Download Results JSON';dl.onclick=doDownload;
-    const p=document.createElement('p');
-    genBtn.parentElement.insertBefore(p,genBtnBar.nextSibling);
-    genBtn.parentElement.insertBefore(dl,p.nextSibling);
+    dl.id='dlBtn';dl.textContent='📥 Download Results JSON';dl.onclick=doDl;
+    dl.style.cssText+=';margin-top:8px';
+    statusDiv.after(dl);
   }
 }
-function doDownload(){
-  const blob=new Blob([JSON.stringify(results,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='selayang-pandang-images.json';a.click();
-  log('📥 downloaded results JSON');
+function doDl(){
+  const b=new Blob([JSON.stringify(results,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='selayang-pandang-images.json';a.click();
+  log('📥 results JSON downloaded.','o');
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-renderCards();log('Puter.js v2 loaded.');log('Login untuk mulai.');
+// INIT
+renderCards();
+log("Puter.js loaded — Klik 'Login Puter' untuk mulai.",'i');
 </script>
 </body>
 </html>

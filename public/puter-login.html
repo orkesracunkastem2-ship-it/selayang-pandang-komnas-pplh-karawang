@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Puter Image Generator — Selayang Pandang</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0b1326; color: #e6edf3;
+      min-height: 100vh; padding: 2rem;
+    }
+    .wrapper { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.6rem; color: #f59e0b; margin-bottom: 0.5rem; }
+    .subtitle { color: #6b7280; font-size: 0.85rem; margin-bottom: 2rem; }
+    button {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #f59e0b; color: #0b1326; border: none; border-radius: 10px;
+      padding: 12px 28px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; margin-bottom: 10px; margin-right: 8px;
+      transition: background 120ms;
+    }
+    button:hover { background: #fbbf24; }
+    button:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+    #status {
+      margin: 1rem 0; padding: 12px 16px; border-radius: 8px;
+      font-size: 0.85rem; display: none;
+    }
+    .ok   { background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3); color: #86efac; }
+    .err  { background: rgba(239,68,68,.15);  border: 1px solid rgba(239,68,68,.3);  color: #fca5a5; }
+    .info { background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.3); color: #93c5fd; }
+
+    .scene-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 1.5rem; }
+
+    .scene-card {
+      background: #162447; border: 1px solid #2a3f6f; border-radius: 12px;
+      padding: 1rem; transition: border-color 120ms;
+    }
+    .scene-card.done { border-color: #22c55e; }
+    .scene-card.error { border-color: #ef4444; }
+    .scene-card.loading { border-color: #f59e0b; }
+    .scene-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .scene-num  { font-weight: 700; color: #f59e0b; font-size: 0.8rem; letter-spacing: .05em; }
+    .scene-name { font-weight: 700; font-size: 0.95rem; color: #e6edf3; }
+    .scene-meta { font-size: 0.75rem; color: #6b7280; margin-bottom: 10px; }
+    .scene-img  { width: 100%; aspect-ratio: 16/9; background: #0d1b2e; border-radius: 8px;
+                  display: flex; align-items: center; justify-content: center;
+                  font-size: 2.5rem; color: #374151; overflow: hidden; }
+    .scene-img img { width: 100%; height: 100%; object-fit: cover; }
+    .scene-prompt { font-size: 0.72rem; color: #6b7280; margin-top: 8px; line-height: 1.5; font-style: italic; }
+
+    #log {
+      margin-top: 1.5rem; font-family: 'Courier New', monospace; font-size: 0.75rem;
+      color: #374151; max-height: 320px; overflow-y: auto;
+      background: #0d1117; border: 1px solid #1e3a5f; border-radius: 8px; padding: 12px;
+    }
+    .log-ok   { color: #86efac; }
+    .log-err  { color: #fca5a5; }
+    .log-info { color: #93c5fd; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <h1>🎬 Puter Image Generator</h1>
+  <p class="subtitle">Selayang Pandang — 5 Scene Storyboard + 24 Shot Reference</p>
+
+  <button id="loginBtn" onclick="doLogin()">🔐 Login dengan Puter</button>
+  <button id="genBtn" onclick="doGenerate()" disabled>🎨 Generate Semua Scene + Shot</button>
+  <button id="downloadBtn" onclick="doDownloadUrls()" disabled>📥 Download Results JSON</button>
+
+  <div id="status"></div>
+  <div id="log"></div>
+  <div class="scene-grid" id="output"></div>
+</div>
+
+<script src="https://js.puter.com/v2/"></script>
+<script>
+// ── PROMPTS ──────────────────────────────────────────────────────────────────
+
+const SCENES = [
+  {
+    id: 'SCENE-01', label: 'PEMBUKA', labelNum: 'SCENE 01 / PEMBUKA',
+    prompt: 'Cinematic aerial golden hour establishing shot of Karawang West Java Indonesia, endless green rice paddy fields in foreground, distant industrial factories glowing amber orange, dramatic god rays piercing through golden sunset sky, teal and amber color grade, slow panning drone aesthetic, cinematic film still photorealistic 8K, ultra wide landscape composition, no text no watermark [SCENE-01]',
+  },
+  {
+    id: 'SCENE-02', label: 'DATA & FAKTA', labelNum: 'SCENE 02 / DATA & FAKTA',
+    prompt: 'Futuristic editorial cinematic film still of Indonesian garbage crisis data visualization: giant floating neon amber number "2.600.000" as population statistic above stylized overflowing garbage truck icon with text "1.500 TON/HARI" in bold red, dark navy minimalist background, shallow depth of field with warm orange bokeh light particles floating, editorial documentary style photorealistic 4K cinematic lighting [SCENE-02]',
+  },
+  {
+    id: 'SCENE-03', label: 'TPA JALUPANG', labelNum: 'SCENE 03 / TPA JALUPANG',
+    prompt: 'Cinematic aerial wide drone shot of massive overflowing garbage landfill TPA in Karawang Indonesia, mountains of colorful plastic and household waste as far as eye can see, hazy grey overcast sky with storm approaching, smoke haze in the air, slow descend drone movement, cold desaturated colour grade, urban decay documentary wide shot photorealistic 8K, no people [SCENE-03]',
+  },
+  {
+    id: 'SCENE-04', label: 'DAMPAK', labelNum: 'SCENE 04 / DAMPAK',
+    prompt: 'Cinematic dark documentary film still: Indonesian urban slum neighbourhood at golden hour, wide river with scattered floating refuse and plastic debris, small wooden boat in the distance navigating the waterway, overcast sky, desaturated cool colour grade, aerial landscape shot, environmental documentary cinematic 8K, no people [SCENE-04]',
+  },
+  {
+    id: 'SCENE-05', label: 'PENUTUP', labelNum: 'SCENE 05 / PENUTUP',
+    prompt: 'Cinematic warm hopeful golden hour documentary film still of Indonesian community waste bank solution in Karawang: local villagers sorting and weighing plastic recyclables at community bank sampah waste bank, green plants and morning golden sunlight, warm orange and green colour grading, uplifting inspirational cinematic mood, photorealistic 4K, rural Indonesian community setting [SCENE-05]',
+  },
+];
+
+const SHOTS = [
+  { id:'SR-01', cam:'BLACK',    scene: 'PEMBUKA',     prompt: 'Minimal cinematic opening title card: solid deep navy matte background, centered bold white text "KOMNAS PPLH KARAWANG" in condensed modern sans-serif, subtle soft inner glow around letters, 16:9 letterbox framing, no decoration no pattern, 4K elegant film opening still [ID:SR-01]' },
+  { id:'SR-02', cam:'DRONE',    scene: 'PEMBUKA',     prompt: 'Cinematic aerial golden hour establishing shot of Karawang West Java, endless green rice fields in foreground, distant industrial factories glowing amber orange, dramatic god rays in warm sunset sky, teal and amber colour grade, slow drone aerial cinematic wide shot, film still 8K ultra-detailed [ID:SR-02]' },
+  { id:'SR-03', cam:'TRIPOD',   scene: 'PEMBUKA',     prompt: 'Time-lapse style cinematic still of Karawang urban skyline transitioning from blue hour to golden hour, city traffic creating light-trail streaks along roadways, distant mountain ridge silhouette, warm-cool dual tone cinematic colour grading 4K [ID:SR-03]' },
+  { id:'SR-04', cam:'HANDHELD', scene: 'PEMBUKA',     prompt: 'Slow-motion 60fps B-roll cinematic still: anonymous hands tossing crumpled plastic waste into overflowing public trash bin, warm afternoon ambient light, shallow depth of field, warm colour grade, urban documentary style, no face visible 4K [ID:SR-04]' },
+  { id:'SR-05', cam:'STATIC',   scene: 'PEMBUKA',     prompt: 'Bold cinematic typography title card still: massive bold condensed white text "DARURAT SAMPAH KARAWANG" centered on solid matte black background, thin amber red accent rule below text, film poster aesthetic, no clutter no decoration, 4K [ID:SR-05]' },
+  { id:'SR-06', cam:'STATIC',   scene: 'DATA & FAKTA', prompt: 'Cinematic editorial infographic still: giant floating amber neon number "2.600.000" against dark navy background, tiny stylized garbage truck icon at the lower right, shallow depth of field with warm bokeh particles, editorial photorealistic 4K [ID:SR-06]' },
+  { id:'SR-07', cam:'STATIC',   scene: 'DATA & FAKTA', prompt: 'Cinematic dramatic editorial infographic still: giant bold red text "1.500 TON/HARI" against dark navy background with subtle red motion-blur vibration effect as if the number is overwhelming, bokeh orange particles, editorial documentary style photorealistic 4K [ID:SR-07]' },
+  { id:'SR-08', cam:'TRIPOD',   scene: 'DATA & FAKTA', prompt: 'Close-up cinematic documentary still: interior of overflowing public trash bin showing piled mixed plastic and paper refuse, half-light from street lamp above, shallow depth of field, cool desaturated colour grade, 4K documentary texture shot [ID:SR-08]' },
+  { id:'SR-09', cam:'GIMBAL',   scene: 'DATA & FAKTA', prompt: 'Cinematic wide shot: convoy of overloaded garbage trucks queuing on muddy access road at landfill entrance, multiple trucks visible stretching into background, desaturated blue-grey cool colour grade, aerial-news documentary style, no faces 4K [ID:SR-09]' },
+  { id:'SR-10', cam:'GIMBAL',   scene: 'DATA & FAKTA', prompt: 'Cinematic street documentary wide shot: person walking past row of overflowing public trash bins on residential sidewalk, distant apartment buildings, desaturated colour grade, urban documentary style 4K photorealistic [ID:SR-10]' },
+  { id:'SR-11', cam:'STATIC',   scene: 'TPA JALUPANG',  prompt: 'Cinematic title card still: bold white text "SEBAGIAN BESAR BERAKHIR DI: TPA JALUPANG" centered on semi-transparent dark navy bar at bottom of frame, aerial landfill visible in dark background, documentary title card style 4K [ID:SR-11]' },
+  { id:'SR-12', cam:'DRONE',    scene: 'TPA JALUPANG',  prompt: 'Cinematic aerial drone wide shot of Karawang garbage landfill TPA Jalupang, mountains of colourful plastic and household refuse stretching to horizon, hazy overcast grey sky, distant smoke haze, slow descending drone movement, ultra-wide cinematic still photorealistic 8K, no people [ID:SR-12]' },
+  { id:'SR-13', cam:'DRONE',    scene: 'TPA JALUPANG',  prompt: 'Cinematic aerial drone tracking flyover of garbage landfill with layered compacted refuse mountains in different colours, dramatic grey stormy sky overhead, storm approaching on the horizon, cinematic wide drone footage 8K photorealistic, no people [ID:SR-13]' },
+  { id:'SR-14', cam:'HANDHELD', scene: 'TPA JALUPANG',  prompt: 'Cinematic macro close-up texture still: surface of decomposing mixed plastic refuse and paper waste pile, golden side light from afternoon sun catching on crumpled packaging, shallow depth of field, documentary environmental detail 4K [ID:SR-14]' },
+  { id:'SR-15', cam:'GIMBAL',   scene: 'TPA JALUPANG',  prompt: 'Cinematic slow tracking close-up: dark brown leachate wastewater seeping from compacted refuse pile along muddy ground drainage channel, slow sideways tracking camera movement, overcast natural light, no people, cool desaturated colour, documentary environmental 4K [ID:SR-15]' },
+  { id:'SR-16', cam:'GIMBAL',   scene: 'TPA JALUPANG',  prompt: 'Cinematic medium portrait shot: anonymous local resident in casual clothing and face mask, expression of concern visible through eyes, standing near landfill perimeter fence, dramatic overcast side light, shallow depth of field, no identifying features, documentary style 4K photorealistic [ID:SR-16]' },
+  { id:'SR-17', cam:'TRIPOD',   scene: 'TPA JALUPANG',  prompt: 'Cinematic action moment still: garbage truck tipping fresh refuse load at landfill disposal point, garbage frozen mid-air landing on refuse mountain, dust-laden air catching daylight, dramatic grey sky, cinematic documentary action frozen moment 4K, no faces [ID:SR-17]' },
+  { id:'SR-18', cam:'OPTIONAL', scene: 'TPA JALUPANG',  prompt: 'Cinematic wide night shot: small controlled fire burning at edge of garbage landfill producing soft orange glow into dark overcast sky, foreground shows weathered ground with refuse debris, long exposure low-light photography aesthetic, moody cinematic 4K [ID:SR-18]' },
+  { id:'SR-19', cam:'OPTIONAL', scene: 'TPA JALUPANG',  prompt: 'Cinematic documentary interview set-up portrait: senior community member in casual clothing and face mask standing before landfill backdrop, natural overcast diffused side light, muted desaturated colour grade, no identifying features, documentary portrait 4K [ID:SR-19]' },
+  { id:'SR-20', cam:'HANDHELD', scene: 'DAMPAK',        prompt: 'Cinematic urban landscape wide shot: street-level view of murky drainage canal lined with floating plastic refuse and tangled waste, multi-storey building silhouettes in background on both banks, overcast natural light, desaturated cool colour grade, urban documentary still photorealistic 4K [ID:SR-20]' },
+  { id:'SR-21', cam:'GIMBAL',   scene: 'DAMPAK',        prompt: 'Cinematic street wet shot at golden hour: Indonesian narrow residential street with slick rain-washed asphalt and overflowing curbside trash bins spilling plastic refuse onto the walkway, warm yellow sodium street-lamp glow, shallow puddles reflecting building neon signs, moody atmospheric cinematic 4K [ID:SR-21]' },
+  { id:'SR-22', cam:'GIMBAL',   scene: 'DAMPAK',        prompt: 'Cinematic wide aerial documentary establishing shot of riverine landscape: wide river surface scattered with floating plastic refuse and scattered debris, small wooden cargo boat in mid-distance navigating between refuse patches, high-contrast aerial composition, environmental documentary 4K [ID:SR-22]' },
+  { id:'SR-23', cam:'TRIPOD',   scene: 'DAMPAK',        prompt: 'Cinematic slow-motion golden hour scene still: two Indonesian children carrying woven recycling baskets walking along quiet residential street edge, long warm shadows cast by setting sun, peaceful tableau post-credits aesthetic, warm soft golden light, cinematic photorealistic 4K [ID:SR-23]' },
+  { id:'SR-24', cam:'GIMBAL',   scene: 'DAMPAK',        prompt: 'Cinematic dramatic night shot: distant industrial facility at landfill edge emitting faint ammonia haze glow into dark sky visible from nearby residential neighbourhood, foreground weathered concrete road and patchy grass, orange mercury vapour street light, long light trail, moody cinematic 4K [ID:SR-24]' },
+  { id:'SR-25', cam:'HANDHELD', scene: 'DAMPAK',        prompt: 'Cinematic environmental portrait still: anonymous local woman resident wearing fabric face mask near industrial zone boundary, midday harsh sun casting sharp shadow across face, shallow depth of field, no identifying features documentary photography style 4K [ID:SR-25]' },
+  { id:'SR-26', cam:'HANDHELD', scene: 'PENUTUP',       prompt: 'Cinematic medium close-up shot of elderly Indonesian woman smiling warmly while holding sorted glass bottles at community waste bank sorting table, morning golden sunlight streaming through window, deep brown wrinkles visible, documentary portrait style photorealistic 4K [ID:SR-26]' },
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+
+let loggedIn = false;
+let results  = [];
+
+// ── UI HELPERS ───────────────────────────────────────────────────────────────
+
+const loginBtn   = document.getElementById('loginBtn');
+const genBtn     = document.getElementById('genBtn');
+const downloadBtn= document.getElementById('downloadBtn');
+const statusDiv  = document.getElementById('status');
+const logDiv     = document.getElementById('log');
+const outputDiv  = document.getElementById('output');
+
+function log(msg, type = 'info') {
+  const el  = document.createElement('div');
+  el.className = 'log-' + type;
+  el.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  logDiv.appendChild(el);
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+function showStatus(msg, type) {
+  statusDiv.textContent = msg;
+  statusDiv.className   = type;
+  statusDiv.style.display = 'block';
+}
+
+function buildCard(scene) {
+  return {
+    id:    scene.id,
+    card:  `<div class="scene-card" id="card-${scene.id}">
+      <div class="scene-header">
+        <span class="scene-num">${scene.id}</span>
+        <span class="scene-name">${scene.label}</span>
+      </div>
+      <div class="scene-meta">${scene.cam} · Segmen ${scene.scene} · Prompt untuk Qwen</div>
+      <div class="scene-img" id="img-${scene.id}">🎬</div>
+      <div class="scene-prompt" id="prompt-${scene.id}">${scene.prompt}</div>
+    </div>`
+  };
+}
+
+// Render all shot reference cards
+function renderShots() {
+  outputDiv.innerHTML = '';
+  SHOTS.forEach(shot => {
+    outputDiv.innerHTML += buildCard(shot).card;
+  });
+  log(`✓ ${SHOTS.length} shot reference cards rendered.`);
+}
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+
+async function doLogin() {
+  loginBtn.disabled = true;
+  loginBtn.textContent = '⏳ Opening login popup…';
+  log('Calling puter.auth.signIn()…');
+
+  try {
+    const res = await puter.auth.signIn();
+    log('✅ Login SUCCESS!', 'ok');
+    log(JSON.stringify(res).slice(0, 120));
+    showStatus('✅ Login berhasil! Klik "Generate" untuk mulai.', 'ok');
+    loginBtn.textContent = '✅ Login sukses';
+    genBtn.disabled = false;
+    loggedIn = true;
+  } catch (e) {
+    log(`❌ Login error: ${e.message}`, 'err');
+    showStatus(`❌ Login gagal: ${e.message}`, 'err');
+    loginBtn.disabled = false;
+    loginBtn.textContent = '🔐 Login dengan Puter (coba lagi)';
+  }
+}
+
+// ── GENERATE ─────────────────────────────────────────────────────────────────
+
+async function generateOne(scene) {
+  const card   = document.getElementById('card-' + scene.id);
+  const imgEl  = document.getElementById('img-'  + scene.id);
+  const promptEl = document.getElementById('prompt-' + scene.id);
+
+  if (card)   card.className = 'scene-card loading';
+  if (imgEl) imgEl.textContent = '⏳';
+  log(`→ Generating [${scene.id}] ${scene.label}…`);
+
+  try {
+    const img = await puter.ai.txt2img(scene.prompt);
+    const url = img.src || img.href || '';
+    if (url) {
+      imgEl.innerHTML = `<img src="${url}" alt="${scene.id}" loading="lazy">`;
+      if (card) card.className = 'scene-card done';
+      log(`✅ [${scene.id}] OK — ${url.slice(0, 80)}`, 'ok');
+      return { id: scene.id, label: scene.label, url, scene: scene.scene };
+    } else {
+      throw new Error('No URL returned');
+    }
+  } catch (e) {
+    if (card)   card.className = 'scene-card error';
+    if (imgEl) imgEl.innerHTML = '❌';
+    log(`❌ [${scene.id}] ERROR: ${e.message}`, 'err');
+    return { id: scene.id, label: scene.label, error: e.message, scene: scene.scene };
+  }
+}
+
+async function doGenerate() {
+  genBtn.disabled     = true;
+  downloadBtn.disabled = true;
+  showStatus('🎨 Generating semua scene — ini bisa 5–10 menit.', 'info');
+  log('=== Starting batch generation ===');
+  results = [];
+
+  // All shots first (SR-01..SR-26) + then scenes (SCENE-01..05)
+  const all = [...SHOTS, ...SCENES];
+  const total = all.length;
+  log(`Total prompts: ${total} (${SHOTS.length} shot refs + ${SCENES.length} cinematic scenes)`);
+
+  for (let i = 0; i < total; i++) {
+    const scene = all[i];
+    log(`[${i+1}|${total}] ${scene.id} — ${scene.labelNum || scene.scene}`);
+    const res = await generateOne(scene);
+    results.push(res);
+    if (i < total - 1) await new Promise(r => setTimeout(r, 1500));
+  }
+
+  const okCount = results.filter(r => r.url).length;
+  log(`\n=== DONE: ${okCount}/${total} images generated ===`, 'ok');
+  showStatus(`✅ ${okCount}/${total} images berhasil! Klik "Download Results JSON" untuk export.`, 'ok');
+  genBtn.textContent = '✓ Selesai';
+  downloadBtn.disabled = false;
+}
+
+// ── DOWNLOAD ─────────────────────────────────────────────────────────────────
+
+function doDownloadUrls() {
+  const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'puter-generated-images.json';
+  a.click();
+  log('📥 Results JSON downloaded.');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+
+renderShots();
+log('Puter.js loaded. Klik "Login dengan Puter" untuk mulai.');
+</script>
+</body>
+</html>

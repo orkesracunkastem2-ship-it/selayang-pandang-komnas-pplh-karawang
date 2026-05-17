@@ -1,0 +1,156 @@
+/* ===== CINEMATIC PRECISION — DESIGN SYSTEM (Google Stitch) ===== */
+/* Dasar: #0b1326 navy gelap — #f59e0b safety orange accent — #dae2fd text */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Surfaces */
+  --bg:            #0b1326;
+  --surface-1:     #16223d;
+  --surface-2:     #1c2c4f;
+  --border:        #334155;
+  --border-focus:  #f59e0b;
+
+  /* Text */
+  --on-bg:         #dae2fd;
+  --on-surface:    #dae2fd;
+  --on-variant:    #d8c3ad;
+  --label:         #a9bad3;
+  --muted:         #6b7a94;
+
+  /* Accent — Safety Orange */
+  --primary:          #ffc174;
+  --primary-container:#f59e0b;
+  --on-primary:       #472a00;
+
+  /* Secondary — Slate Blue */
+  --secondary:         #b9c7e0;
+  --secondary-container:#3c4a5e;
+
+  /* Tertiary — Cyan */
+  --tertiary:         #98d3ff;
+  --tertiary-container:#42bbff;
+
+  /* Spacing 8px rhythm */
+  --r-1:4; --r-2:8; --r-3:12; --r-4:16; --r-5:24; --r-6:32; --r-7:48;
+
+  /* Status */
+  --ok:    #86efac;
+  --warn:  #fde68a;
+  --err:   #f87171;
+  --info:  #93c5fd;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--on-surface);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ── TYPOGRAPHY HELPERS ── */
+.text-primary  { color: var(--primary); }
+.text-secondary { color: var(--secondary); }
+.text-label    { color: var(--label); }
+.text-muted    { color: var(--muted); }
+.text-on-bg    { color: var(--on-bg); }
+
+/* ── COMPONENTS ── */
+
+/* Panel */
+.panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+/* Card */
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: border-color 120ms, background 120ms;
+}
+.card:hover { border-color: var(--border-focus); }
+
+/* Badge / Chip */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 10px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase;
+  background: var(--surface-2); color: var(--label);
+  border: 1px solid var(--border);
+}
+.badge.orange { background: var(--primary-container); color: var(--on-primary); border-color: var(--primary-container); }
+.badge.green  { background: #14532d; color: #86efac; }
+.badge.red    { background: #450a0a; color: #f87171; }
+.badge.blue   { background: #1e3a5f; color: #93c5fd; }
+.badge.purple { background: #2e1065; color: #c4b5fd; }
+
+/* Label / section-header */
+.section-header {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--label);
+  margin-bottom: .75rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.section-header::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* Separator */
+hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+/* Link */
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── UTILITY ── */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: .25rem; }
+.gap-2 { gap: .5rem; }
+.gap-3 { gap: .75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.text-sm  { font-size: .875rem; }
+.text-xs  { font-size: .75rem; }
+.text-lg  { font-size: 1.125rem; }
+.text-xl  { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.font-bold { font-weight: 700; }
+.font-600  { font-weight: 600; }
+.uppercase { text-transform: uppercase; }
+.grid { display: grid; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.gap-3 { gap: .75rem; }
+.rounded { border-radius: 8px; }
+.w-full { width: 100%; }
+
+@media (max-width:768px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}

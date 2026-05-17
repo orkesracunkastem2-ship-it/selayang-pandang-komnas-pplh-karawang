@@ -1,0 +1,25 @@
+<!-- narasi/segmen5_penutup.ssml -->
+<!-- Target durasi: ~50-55 detik | Speed ElevenLabs: normal (±0%) -->
+<!-- Segmen 5: PENUTUP — SOLUSI & CALL TO ACTION (2:20–3:00) -->
+
+Tapi <prosody rate="slow"><emphasis level="strong">masih ada harapan.</emphasis></prosody>
+<break time="500ms"/>
+Bank sampah bermunculan.
+Komunitas peduli lingkungan mulai bergerak.
+Perubahan dimulai dari langkah kecil.
+<break time="700ms"/>
+DPD Komnas PPLH Karawang hadir —
+untuk mengawal, mengadvokasi,
+dan memastikan isu lingkungan <emphasis level="strong">tidak dilupakan.</emphasis>
+<break time="600ms"/>
+Bukan hanya tugas pemerintah.
+<break time="300ms"/>
+Ini tanggung jawab kita semua.
+<break time="400ms"/>
+Setiap langkah kecil berarti.
+<break time="700ms"/>
+<prosody rate="slow">
+Sampah bukan warisan.
+<break time="400ms"/>
+Sampah adalah tanggung jawab kita hari ini.
+</prosody>

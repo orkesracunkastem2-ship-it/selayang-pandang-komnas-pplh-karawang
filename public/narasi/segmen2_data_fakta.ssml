@@ -1,0 +1,26 @@
+<!-- narasi/segmen2_data_fakta.ssml -->
+<!-- Target durasi: ~48-50 detik | Speed ElevenLabs: +3% -->
+<!-- Segmen 2: DATA & FAKTA (0:35–1:15) -->
+<!-- KOREKSI P1: 0,5kg x 2,6jt = 1.300 ton (min). DLHK Jabar: >1.500 ton. Gap ini memperkuat argumen. -->
+
+<prosody rate="fast">Setiap hari.</prosody>
+<break time="300ms"/>
+Setiap warga Karawang rata-rata menghasilkan setengah kilogram sampah.
+<break time="500ms"/>
+Kalikan dengan <emphasis level="strong">2,6 juta jiwa.</emphasis>
+Dengan perhitungan sederhana, itu jadi <emphasis level="strong">1.300 ton</emphasis> per hari.
+<break time="400ms"/>
+Data D-L-H-K Jawa Barat sebut angka bahkan mencapai
+<emphasis level="strong">lebih dari 1.500 ton per hari.</emphasis>
+<break time="200ms"/>
+Artinya, realita di lapangan jauh lebih parah dari perhitungan minimal.
+<break time="800ms"/>
+Bukan hanya angka.
+<break time="300ms"/>
+1.500 ton berarti: ribuan truk, puluhan hektar lahan,
+dan beban lingkungan yang terus menumpuk tanpa solusi nyata.
+<break time="500ms"/>
+Dan dari semua sampah itu
+<break time="1000ms"/>
+sebagian besar berakhir di satu tempat:
+<prosody rate="slow"><emphasis level="strong">TPA Jalupang.</emphasis></prosody>

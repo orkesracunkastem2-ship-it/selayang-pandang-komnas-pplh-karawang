@@ -1,0 +1,17 @@
+<!-- narasi/segmen1_pembuka.ssml -->
+<!-- Target durasi: ~38-40 detik | Speed ElevenLabs: +3% -->
+<!-- Segmen 1: PEMBUKA (0:00–0:35) -->
+
+<break time="1000ms"/>
+Karawang.
+<break time="800ms"/>
+Kota industri, lumbung padi Jawa Barat.
+Rumah bagi lebih dari 2,6 juta jiwa.
+<break time="500ms"/>
+Tapi di balik hiruk pikuk pembangunan,
+<break time="300ms"/>
+ada satu masalah yang makin hari makin <emphasis level="strong">mencekik.</emphasis>
+<break time="800ms"/>
+<prosody rate="slow"><emphasis level="strong">Darurat. Sampah.</emphasis></prosody>
+<break time="500ms"/>
+Ini Karawang hari ini.

@@ -1,4 +1,5 @@
 'use client';
+import PdfButton from '../../components/PdfButton';
 
 import { useState } from 'react';
 
@@ -156,7 +157,7 @@ export default function ScriptPage() {
   const toggle = (id: number) => setOpenSeg(openSeg === id ? null : id);
 
   return (
-    <main style={{ maxWidth: 940, margin: '0 auto', padding: '1.5rem' }}>
+    <main id="pdf-script">      {/* PDF export bar */}      <div style={{"display":"flex","justifyContent":"flex-end","marginBottom":16}}>        <PdfButton title="Selayang Pandang — Script" targetId="pdf-script" filename="selayang-pandang-script.pdf" btnLabel="Download PDF" />      </div>
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--on-bg)', letterSpacing: '-.03em' }}>Full Script</h1>

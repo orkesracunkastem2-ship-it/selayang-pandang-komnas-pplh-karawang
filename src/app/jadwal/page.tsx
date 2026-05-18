@@ -1,6 +1,6 @@
 'use client';
-
-import { Calendar, MapPin, Camera, Users, AlertTriangle, Check, Clock } from 'lucide-react';
+import PdfButton from '../../components/PdfButton';
+import {Calendar, MapPin, Camera, Users, AlertTriangle, Check, Clock } from 'lucide-react';
 
 const SCHEDULE = [
   {
@@ -105,7 +105,7 @@ const BADGE_MAP: Record<string,string> = {
 
 export default function JadwalPage() {
   return (
-    <main style={{ maxWidth: 940, margin: '0 auto', padding: '1.5rem' }}>
+    <main id="pdf-jadwal">      {/* PDF export bar */}      <div style={{"display":"flex","justifyContent":"flex-end","marginBottom":16}}>        <PdfButton title="Selayang Pandang — Jadwal" targetId="pdf-jadwal" filename="selayang-pandang-jadwal.pdf" btnLabel="Download PDF" />      </div>
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--on-bg)', letterSpacing: '-.03em', display:'flex', alignItems:'center', gap:10 }}>

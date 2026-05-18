@@ -1,6 +1,6 @@
 'use client';
-
-import { Package, Camera, Mic, AlertTriangle, Check } from 'lucide-react';
+import PdfButton from '../../components/PdfButton';
+import {Package, Camera, Mic, AlertTriangle, Check } from 'lucide-react';
 
 const CATEGORIES = [
   {
@@ -81,7 +81,7 @@ function Row({ item, idx }: { item: any; idx: number }) {
 
 export default function AsetPage() {
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: '1.5rem' }}>
+    <main id="pdf-aset">      {/* PDF export bar */}      <div style={{"display":"flex","justifyContent":"flex-end","marginBottom":16}}>        <PdfButton title="Selayang Pandang — Aset" targetId="pdf-aset" filename="selayang-pandang-aset.pdf" btnLabel="Download PDF" />      </div>
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--on-bg)', letterSpacing: '-.03em', display:'flex', alignItems:'center', gap:10 }}>

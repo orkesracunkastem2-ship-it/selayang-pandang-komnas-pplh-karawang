@@ -1,6 +1,6 @@
 'use client';
-
 import { useState } from 'react';
+import PdfButton from '../../components/PdfButton';
 import { Copy, Check, Volume2, Download, Play } from 'lucide-react';
 
 const NARASI_FILES = [
@@ -224,7 +224,7 @@ export default function NarasiPage() {
   const [openId, setOpenId] = useState(1);
 
   return (
-    <main style={{ maxWidth: 860, margin: '0 auto', padding: '1.5rem' }}>
+    <main id="pdf-narasi">      {/* PDF export bar */}      <div style={{"display":"flex","justifyContent":"flex-end","marginBottom":16}}>        <PdfButton title="Selayang Pandang — Narasi" targetId="pdf-narasi" filename="selayang-pandang-narasi.pdf" btnLabel="Download PDF" />      </div>
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--on-bg)', letterSpacing: '-.03em', display:'flex', alignItems:'center', gap:10 }}>

@@ -1,6 +1,6 @@
 'use client';
-
-import { Users, Camera, Mic, MicOff, MapPin, Shield } from 'lucide-react';
+import PdfButton from '../../components/PdfButton';
+import {Users, Camera, Mic, MicOff, MapPin, Shield } from 'lucide-react';
 
 const TIM = [
   { nama: 'Agung Dwi Julianto, SP.', role: 'Bidang Komunikasi, Informatika & Investigasi', icon: '🎬', warna: 'var(--primary-container)' },
@@ -13,7 +13,7 @@ const TIM = [
 
 export default function TimPage() {
   return (
-    <main style={{ maxWidth: 940, margin: '0 auto', padding: '1.5rem' }}>
+    <main id="pdf-tim">      {/* PDF export bar */}      <div style={{"display":"flex","justifyContent":"flex-end","marginBottom":16}}>        <PdfButton title="Selayang Pandang — Tim" targetId="pdf-tim" filename="selayang-pandang-tim.pdf" btnLabel="Download PDF" />      </div>
 
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--on-bg)', letterSpacing: '-.03em', display:'flex', alignItems:'center', gap:10 }}>

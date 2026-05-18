@@ -1,8 +1,13 @@
 'use client';
+import PdfButton from '../../components/PdfButton';
 
 import { useState } from 'react';
+import React from 'react';
+import { imgSrcForShot, imgSrcForScene } from '@/lib/imageMap';
 
-// ── SHOT DATA ──────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// SHOT DATA
+// ══════════════════════════════════════════════════════════════════════════════
 const SHOTS = {
   TP: [ // TPA Jalupang
     { id: 'TP-01', cam: 'DRONE',  note: 'Aerial wide — establishing shot, slow descend' },
@@ -91,12 +96,44 @@ function HighlightSSML(text: string) {
     .replace(/(".*?")/g, '<span style="color:#a5d6ff">$1</span>');
 }
 
+// ── ShotCard: per-shot image card with unique Puter.js image ──────────────────
+function ShotCard({ shot, scene }: { shot: any; scene: any }) {
+  const shotUrl = imgSrcForShot(shot.id);
+  const [errored, setErrored] = React.useState(false);
+  const fb = shot.cam==='DRONE' ? 'linear-gradient(135deg,#1a3a5e,#162447)'
+         : shot.cam==='GIMBAL'? 'linear-gradient(135deg,#2a1808,#1a1000)'
+         : shot.cam==='HAND'  ? 'linear-gradient(135deg,#1a2633,#0d1117)'
+         :                       'linear-gradient(135deg,#162447,#0f2547)';
+  return (
+    <div style={{ flex:'0 0 290px', borderRadius:10, overflow:'hidden', background:'var(--surface-1)', border:'1px solid var(--border)' }}>
+      <div style={{ aspectRatio:'16/9', background:'#0d1b2e', position:'relative' }}>
+        {shotUrl && !errored && (
+          <img src={shotUrl} alt={shot.id+' '+scene.title} loading="lazy"
+            style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', position:'relative', zIndex:1 }}
+            onError={() => setErrored(true)} />
+        )}
+        {(errored || !shotUrl) && (
+          <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:28, background:fb, color:'#374151', position:'absolute', inset:0 }}>📷</div>
+        )}
+        <div style={{ position:'absolute', top:6, right:6, fontSize:9, padding:'2px 7px', borderRadius:4,
+          background:'rgba(0,0,0,.65)', color:'rgba(255,255,255,.5)', zIndex:2 }}>{shot.cam}</div>
+      </div>
+      <div style={{ padding:'7px 10px', fontSize:11, color:'var(--on-variant)' }}>
+        <span className="badge orange" style={{ fontSize:9 }}>{shot.id}</span>
+        <span style={{ fontWeight:600, color:'var(--primary)', marginLeft:5 }}>{shot.cam}</span>
+        <div style={{ marginTop:3, color:'var(--muted)', fontSize:10, lineHeight:1.4 }}>{shot.note}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function StoryboardPage() {
   const [sceneIdx, setSceneIdx] = useState(0);
   const scene = SCENES[sceneIdx];
 
   return (
-    <main style={{ maxWidth: 1200, margin: '0 auto', padding: '1.5rem' }}>
+    <main id="pdf-storyboard">      {/* PDF export bar */}      <div style={{"display":"flex","justifyContent":"flex-end","marginBottom":16}}>        <PdfButton title="Selayang Pandang — Storyboard" targetId="pdf-storyboard" filename="selayang-pandang-storyboard.pdf" btnLabel="Download PDF" />      </div>
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
@@ -137,6 +174,32 @@ export default function StoryboardPage() {
             </button>
           );
         })}
+      </div>
+
+      {/* ── Generated Scene Thumbnails — Puter.js ── */}
+      <div style={{ marginBottom:20, marginTop:4 }}>
+        <div style={{ display:'flex', gap:10, overflow:'auto', padding:'6px 0' }}>
+          {SCENES.map((s,i) => {
+            const active = i===sceneIdx;
+            const scImg = imgSrcForScene(s.id);
+            return (
+              <button key={s.id} onClick={()=>setSceneIdx(i)} style={{
+                flex:'0 0 162px', background:'transparent',
+                border:`2px solid ${active ? 'var(--primary-container)' : 'var(--border)'}`,
+                borderRadius:10, padding:6, cursor:'pointer', textAlign:'left', transition:'all 120ms',
+                opacity: active ? 1 : .6, transform: active ? 'scale(1.04)' : 'scale(1)',
+              }}>
+                <div style={{ width:148, aspectRatio:'16/9', borderRadius:6, overflow:'hidden', background:'#0d1b2e', marginBottom:5 }}>
+                  <img src={scImg} alt={s.title} loading="lazy"
+                    style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
+                    onError={(e)=>{ (e.target as HTMLImageElement).style.display='none' }} />
+                </div>
+                <div style={{ fontSize:9, fontWeight:700, color: active ? 'var(--primary-container)' : 'var(--on-surface)' }}>S{String(s.id).padStart(2,'0')}</div>
+                <div style={{ fontSize:10, color:'var(--muted)', marginTop:1 }}>{s.title}</div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Detail Row ── */}
@@ -297,45 +360,20 @@ export default function StoryboardPage() {
         </div>
       </div>
 
-      {/* ── Frame Thumbnails ── */}
-      <div style={{ marginTop: 28 }}>
-        <div className="section-header">Cinematic Frame Reference — {scene.title}</div>
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-          gap: 10,
-        }}>
-          {[...scene.shots, ...scene.shots.slice(0, scene.shots.length > 5 ? 2 : 0)].map((s, i) => (
-            <div key={s.id + i} style={{
-              aspectRatio: '16/10', borderRadius: 8, overflow: 'hidden',
-              background: s.cam === 'DRONE' ? 'linear-gradient(135deg,#1a3a5e,#162447)'
-                : s.cam === 'GIMBAL' ? 'linear-gradient(135deg,#2a1808,#1a1000)'
-                : s.cam === 'HAND'   ? 'linear-gradient(135deg,#1a2633,#0d1117)'
-                :                       'linear-gradient(135deg,#162447,#0f2547)',
-              border: '1px solid var(--border)',
-              display: 'flex', flexDirection: 'column',
-              justifyContent: 'flex-end', padding: 8,
-              position: 'relative',
-            }}>
-              <div style={{
-                position: 'absolute', top: 6, right: 6,
-                fontSize: 9, padding: '2px 6px', borderRadius: 4,
-                background: 'rgba(0,0,0,.5)', color: 'rgba(255,255,255,.55)',
-              }}>{s.cam}</div>
-              <div style={{
-                background: 'rgba(0,0,0,.6)', borderRadius: 4,
-                padding: '4px 8px', fontSize: 9, color: 'rgba(255,255,255,.8)',
-              }}>
-                <div style={{ fontWeight: 700 }}>{s.id}</div>
-                <div style={{ opacity: .8, maxWidth: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {s.note}
-                </div>
-              </div>
-            </div>
+        <div style={{ display:'flex', gap:10, overflow:'auto', paddingBottom:4, marginTop:28 }}>
+          <div className="section-header" style={{ whiteSpace:'nowrap' }}>Cinematic Frame Reference — {scene.title}</div>
+        </div>
+        <div style={{ display:'flex', gap:12, overflow:'auto', padding:'10px 2px 14px' }}>
+          {scene.shots.map((s) => (
+            <ShotCard key={s.id} shot={s} scene={scene} />
           ))}
         </div>
-      </div>
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:8 }}>
+          <span style={{ fontSize:10, color:'var(--muted)' }}>Generated via Puter.js free image API — 5 cinematic scenes + 25 shot reference images</span>
 
-      {/* ── All Shots Reference ── */}
+        </div>
+
+      {/* All Shots Reference */}
       <div style={{ marginTop: 28, marginBottom: 32 }}>
         <div className="section-header">Shot Reference — Semua {SCENES.reduce((a,s) => a + s.shots.length, 0)} Shots</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

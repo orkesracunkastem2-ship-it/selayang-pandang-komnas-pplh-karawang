@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { LayoutGrid, FileText, Volume2, Calendar, ArrowRight } from 'lucide-react';
+import PdfButton from '../components/PdfButton';
 
 const CARDS = [
   { href: '/storyboard', icon: LayoutGrid,  label: 'Storyboard',      desc: '5 frame visual — shot-by-shot' },
@@ -29,7 +30,12 @@ const BADGE_MAP: Record<string, string> = { orange: 'badge orange', red: 'badge 
 
 export default function LandingPage() {
   return (
-    <main style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
+    <main id="pdf-landing" style={{ maxWidth: 960, margin: '0 auto', padding: '2rem 1.5rem 4rem' }}>
+
+      {/* PDF action bar */}
+      <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:16 }}>
+        <PdfButton title="Selayang Pandang — Beranda" targetId="pdf-landing" filename="selayang-pandang-beranda.pdf" btnLabel="Download PDF" />
+      </div>
 
       {/* ── HERO ── */}
       <section style={{ textAlign: 'center', marginBottom: '3rem', paddingTop: '2rem' }}>

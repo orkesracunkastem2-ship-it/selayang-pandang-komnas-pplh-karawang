@@ -1,6 +1,6 @@
 'use client';
-import PdfButton from '../../components/PdfButton';
 
+import PdfButton from '../../components/PdfButton';
 import { useState } from 'react';
 import React from 'react';
 import { imgSrcForShot, imgSrcForScene } from '@/lib/imageMap';
@@ -71,7 +71,7 @@ const SCENES = [
   },
   {
     id: 4, title: 'DAMPAK', subtitle: 'Lingkungan & Masyarakat', timecode: '1:50 – 2:20', duration: '30 detik',
-    mood: 'Krisis', moodCls: 'red', camGroup: 'SP', bg: FRAME_BG[3],
+    mood: 'Krisi', moodCls: 'red', camGroup: 'SP', bg: FRAME_BG[3],
     icon: '⚠️',
     shots: SHOTS.SP, audio: { mus: 'Adagio string → klimax', sfx: 'Air, fire crackle', nar: 'Sungai jadi jalur sampah. Ini soal kesehatan.' },
     ssml: `Sungai jadi jalur sampah.<break time="300ms"/><emphasis level="strong">Ini soal kesehatan. Soal masa depan.</emphasis>`,
@@ -96,48 +96,45 @@ function HighlightSSML(text: string) {
     .replace(/(".*?")/g, '<span style="color:#a5d6ff">$1</span>');
 }
 
-// ── ShotCard: per-shot image card with unique Puter.js image ──────────────────
-function ShotCard({ shot, scene }: { shot: any; scene: any }) {
-  const shotUrl = imgSrcForShot(shot.id);
-  const [errored, setErrored] = React.useState(false);
-  const fb = shot.cam==='DRONE' ? 'linear-gradient(135deg,#1a3a5e,#162447)'
-         : shot.cam==='GIMBAL'? 'linear-gradient(135deg,#2a1808,#1a1000)'
-         : shot.cam==='HAND'  ? 'linear-gradient(135deg,#1a2633,#0d1117)'
-         :                       'linear-gradient(135deg,#162447,#0f2547)';
-  return (
-    <div style={{ flex:'0 0 290px', borderRadius:10, overflow:'hidden', background:'var(--surface-1)', border:'1px solid var(--border)' }}>
-      <div style={{ aspectRatio:'16/9', background:'#0d1b2e', position:'relative' }}>
-        {shotUrl && !errored && (
-          <img src={shotUrl} alt={shot.id+' '+scene.title} loading="lazy"
-            style={{ width:'100%', height:'100%', objectFit:'cover', display:'block', position:'relative', zIndex:1 }}
-            onError={() => setErrored(true)} />
-        )}
-        {(errored || !shotUrl) && (
-          <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center',
-            fontSize:28, background:fb, color:'#374151', position:'absolute', inset:0 }}>📷</div>
-        )}
-        <div style={{ position:'absolute', top:6, right:6, fontSize:9, padding:'2px 7px', borderRadius:4,
-          background:'rgba(0,0,0,.65)', color:'rgba(255,255,255,.5)', zIndex:2 }}>{shot.cam}</div>
-      </div>
-      <div style={{ padding:'7px 10px', fontSize:11, color:'var(--on-variant)' }}>
-        <span className="badge orange" style={{ fontSize:9 }}>{shot.id}</span>
-        <span style={{ fontWeight:600, color:'var(--primary)', marginLeft:5 }}>{shot.cam}</span>
-        <div style={{ marginTop:3, color:'var(--muted)', fontSize:10, lineHeight:1.4 }}>{shot.note}</div>
-      </div>
-    </div>
-  );
-}
-
 export default function StoryboardPage() {
   const [sceneIdx, setSceneIdx] = useState(0);
+  const [shotIdx, setShotIdx] = useState(0);
+  const [showDetail, setShowDetail] = useState(false);
+  
   const scene = SCENES[sceneIdx];
+  const currentShots = scene.shots;
+  const currentShot = currentShots[shotIdx];
+  const shotUrl = imgSrcForShot(currentShot.id);
+
+  // Navigation handlers
+  const nextShot = () => {
+    if (shotIdx < currentShots.length - 1) {
+      setShotIdx(shotIdx + 1);
+    } else {
+      setShotIdx(0);
+      if (sceneIdx < SCENES.length - 1) setSceneIdx(sceneIdx + 1);
+    }
+  };
+
+  const prevShot = () => {
+    if (shotIdx > 0) {
+      setShotIdx(shotIdx - 1);
+    } else {
+      setShotIdx(currentShots.length - 1);
+      if (sceneIdx > 0) setSceneIdx(sceneIdx - 1);
+    }
+  };
 
   return (
-    <main id="pdf-storyboard">      {/* PDF export bar */}      <div style={{"display":"flex","justifyContent":"flex-end","marginBottom":16}}>        <PdfButton title="Selayang Pandang — Storyboard" targetId="pdf-storyboard" filename="selayang-pandang-storyboard.pdf" btnLabel="Download PDF" />      </div>
+    <main id="pdf-storyboard">
+      {/* PDF export bar */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <PdfButton title="Selayang Pandang — Storyboard" targetId="pdf-storyboard" filename="selayang-pandang-storyboard.pdf" btnLabel="Download PDF" />
+      </div>
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <div style={{ display:'flex', alignItems:'baseline', gap:10, flexWrap:'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--on-bg)', letterSpacing: '-.03em' }}>Storyboard</h1>
           <span className="badge orange">Karawang dalam Darurat Sampah</span>
         </div>
@@ -156,7 +153,7 @@ export default function StoryboardPage() {
           const moodCls = BADGE_MAP[s.moodCls] || 'badge orange';
           return (
             <button key={s.id}
-              onClick={() => setSceneIdx(i)}
+              onClick={() => { setSceneIdx(i); setShotIdx(0); }}
               style={{
                 background: i === sceneIdx ? 'rgba(245,158,11,.09)' : 'var(--surface-1)',
                 border: `2px solid ${i === sceneIdx ? 'var(--primary-container)' : 'var(--border)'}`,
@@ -166,7 +163,7 @@ export default function StoryboardPage() {
               }}
             >
               <div style={{ fontSize: 11, fontWeight: 700, color: i === sceneIdx ? 'var(--primary-container)' : 'var(--on-variant)', marginBottom: 4 }}>
-                SCENE {String(s.id).padStart(2,'0')}
+                SCENE {String(s.id).padStart(2, '0')}
               </div>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--on-surface)', marginBottom: 6 }}>{s.title}</div>
               <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 6 }}>{s.timecode}</div>
@@ -176,212 +173,222 @@ export default function StoryboardPage() {
         })}
       </div>
 
-      {/* ── Generated Scene Thumbnails — Puter.js ── */}
-      <div style={{ marginBottom:20, marginTop:4 }}>
-        <div style={{ display:'flex', gap:10, overflow:'auto', padding:'6px 0' }}>
-          {SCENES.map((s,i) => {
-            const active = i===sceneIdx;
-            const scImg = imgSrcForScene(s.id);
-            return (
-              <button key={s.id} onClick={()=>setSceneIdx(i)} style={{
-                flex:'0 0 162px', background:'transparent',
-                border:`2px solid ${active ? 'var(--primary-container)' : 'var(--border)'}`,
-                borderRadius:10, padding:6, cursor:'pointer', textAlign:'left', transition:'all 120ms',
-                opacity: active ? 1 : .6, transform: active ? 'scale(1.04)' : 'scale(1)',
-              }}>
-                <div style={{ width:148, aspectRatio:'16/9', borderRadius:6, overflow:'hidden', background:'#0d1b2e', marginBottom:5 }}>
-                  <img src={scImg} alt={s.title} loading="lazy"
-                    style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}
-                    onError={(e)=>{ (e.target as HTMLImageElement).style.display='none' }} />
-                </div>
-                <div style={{ fontSize:9, fontWeight:700, color: active ? 'var(--primary-container)' : 'var(--on-surface)' }}>S{String(s.id).padStart(2,'0')}</div>
-                <div style={{ fontSize:10, color:'var(--muted)', marginTop:1 }}>{s.title}</div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Detail Row ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
-
-        {/* ─ LEFT: Preview + Shot List ─ */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* Frame Preview */}
+      {/* ── Shot Viewer (Red Circle Area) ── */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24,
+        background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: 12, padding: 20,
+      }}>
+        {/* RED CIRCLE AREA: Main Shot Preview */}
+        <div style={{ position: 'relative' }}>
+          <div className="section-header" style={{ marginBottom: 10 }}>Cinematic Frame Reference</div>
           <div style={{
-            background: 'var(--surface-1)', border: '1px solid var(--border)',
-            borderRadius: 12, overflow: 'hidden',
+            aspectRatio: '16/9', borderRadius: 8, overflow: 'hidden',
+            background: '#0d1b2e', border: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position: 'relative',
           }}>
-            <div style={{ aspectRatio: '16/9', background: scene.bg, position: 'relative' }}>
-              {/* Letterbox bars */}
-              <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', justifyContent:'space-between',
-                           padding: '16px 24px', zIndex: 1 }}>
-                {/* Top bar */}
-                <div style={{
-                  background: '#000', padding: '8px 20px', borderRadius: 4,
-                  textAlign: 'center', alignSelf: 'center',
-                }}>
-                  <span style={{ fontSize: 'clamp(20px,3.5vw,44px)', fontWeight: 900,
-                                 color: '#fff', letterSpacing: '-.03em', textShadow: '0 2px 32px rgba(0,0,0,.9)' }}>
-                    {scene.title}
-                  </span>
-                  <div style={{ fontSize: 10, color: 'var(--primary-container)', marginTop: 2, fontFamily: 'monospace', letterSpacing: '.04em' }}>
-                    {scene.timecode}  |  SEGMEN {scene.id} — {scene.title}
-                  </div>
-                </div>
-                {/* Bottom bar — shot type icons */}
-                <div style={{
-                  background: '#000', padding: '6px 16px', borderRadius: 4,
-                  display: 'flex', gap: 8, justifyContent: 'center',
-                }}>
-                  {[...scene.shots.slice(0, 6), ...(scene.shots.length > 6 ? [{id:'...',cam:'...',note:'...'}] : [])].map((s, i) => (
-                    <div key={i} style={{
-                      padding: '2px 10px', borderRadius: 999,
-                      background: 'rgba(255,255,255,.1)',
-                      fontSize: 9, color: 'rgba(255,255,255,.6)',
-                    }}>{s.cam}</div>
-                  ))}
-                </div>
-              </div>
-              {/* Big scene icon in background */}
-              <div style={{
-                position:'absolute', bottom: 30, right: 24,
-                fontSize: 80, opacity: .12, zIndex: 0, filter: 'grayscale(1)',
-              }}>{scene.icon}</div>
+            {shotUrl ? (
+              <img 
+                src={shotUrl} 
+                alt={currentShot.id} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                onClick={() => setShowDetail(true)}
+              />
+            ) : (
+              <div style={{ fontSize: 48, color: 'var(--muted)' }}>📷</div>
+            )}
+            
+            {/* Shot ID overlay on image */}
+            <div style={{
+              position: 'absolute', top: 8, left: 8,
+              background: 'rgba(0,0,0,0.7)', color: 'var(--primary)',
+              padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 700,
+            }}>
+              {currentShot.id}
             </div>
-
-            {/* Shot List */}
-            <div style={{ padding: 14 }}>
-              <div className="section-header">Shot List — {scene.title}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {scene.shots.map((s, i) => (
-                  <div key={s.id} className="card" style={{
-                    display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 12px',
-                    borderColor: 'var(--border)',
-                    background: i % 2 === 0 ? 'var(--surface-1)' : 'var(--surface-2)',
-                  }}>
-                    <span className="badge orange" style={{ flexShrink: 0, fontSize: 9 }}>{s.id}</span>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--on-surface)' }}>
-                        <span className="text-primary">{' ['+s.cam+'] '}</span>{s.note}
-                      </div>
-                      <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 1 }}>
-                        Segmen {scene.id} · {scene.title}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            
+            {/* Camera type overlay */}
+            <div style={{
+              position: 'absolute', top: 8, right: 8,
+              background: 'rgba(0,0,0,0.7)', color: 'var(--on-surface)',
+              padding: '4px 8px', borderRadius: 4, fontSize: 10,
+            }}>
+              {currentShot.cam}
             </div>
+          </div>
+          
+          {/* ORANGE CIRCLE AREA: Shot Navigation */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <button
+              onClick={prevShot}
+              style={{
+                flex: 1, padding: '8px 12px', borderRadius: 6,
+                background: 'var(--surface-2)', border: '1px solid var(--border)',
+                color: 'var(--on-surface)', fontSize: 12, cursor: 'pointer',
+              }}
+            >← Prev</button>
+            <button
+              onClick={nextShot}
+              style={{
+                flex: 1, padding: '8px 12px', borderRadius: 6,
+                background: 'var(--primary-container)', color: 'var(--on-primary)',
+                border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              }}
+            >Next →</button>
           </div>
         </div>
 
-        {/* ─ RIGHT: Audio + SSML ─ */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-          {/* Audio Mix */}
-          <div className="panel">
-            <div className="section-header">Audio Mix — Segmen {scene.id}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div>
-                <div style={{ fontSize: 10, color: '#42bbff', marginBottom: 3, fontWeight: 600 }}>🎵 MUSIK</div>
-                <div style={{ background: 'var(--surface-2)', height: 14, borderRadius: 7, overflow: 'hidden' }}>
-                  <div style={{
-                    width: scene.id === 5 ? '100%' : `${90 - scene.id * 8}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg,#1e3a6e,#42bbff55)',
-                  }} />
-                </div>
-                <div style={{ fontSize: 10, color: 'var(--on-variant)', marginTop: 3, fontStyle: 'italic' }}>{scene.audio.mus}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 10, color: '#fca5a5', marginBottom: 3, fontWeight: 600 }}>🔊 SFX</div>
-                <div style={{ background: 'var(--surface-2)', height: 14, borderRadius: 7, overflow: 'hidden' }}>
-                  <div style={{
-                    width: scene.id === 1 ? '15%' : `${60 - scene.id * 5}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg,#3d1f0a,#fca5a544)',
-                  }} />
-                </div>
-                <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 3 }}>{scene.audio.sfx}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 10, color: 'var(--primary-container)', marginBottom: 3, fontWeight: 600 }}>🎙️ NARASI</div>
-                <div style={{ background: 'var(--surface-2)', height: 14, borderRadius: 7, overflow: 'hidden' }}>
-                  <div style={{
-                    width: `${80 - scene.id * 5}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg,#613b00,#ffc174)',
-                  }} />
-                </div>
-                <div style={{ fontSize: 10, color: 'var(--on-variant)', marginTop: 3, fontStyle: 'italic' }}>{scene.audio.nar}</div>
+        {/* Shot Details */}
+        <div>
+          <div className="section-header" style={{ marginBottom: 10 }}>Shot Details</div>
+          <div className="panel" style={{ padding: 16 }}>
+            <div style={{ marginBottom: 12 }}>
+              <span className="badge orange" style={{ fontSize: 10, marginBottom: 6, display: 'inline-block' }}>
+                {currentShot.id}
+              </span>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--on-surface)', marginTop: 4 }}>
+                {currentShot.cam} Shot
               </div>
             </div>
-          </div>
-
-          {/* SSML — ElevenLabs */}
-          <div className="panel">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div className="section-header" style={{ marginBottom: 0 }}>ElevenLabs SSML — Segmen {scene.id}</div>
-              <button onClick={() => navigator.clipboard.writeText(scene.ssml)}
-                style={{
-                  fontSize: 10, padding: '3px 10px', borderRadius: 5,
-                  background: 'var(--surface-2)', color: 'var(--label)',
-                  border: '1px solid var(--border)', cursor: 'pointer',
-                }}>
-                Copy SSML
-              </button>
+            <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.6 }}>
+              {currentShot.note}
             </div>
-            <pre style={{
-              background: '#0d1117', border: '1px solid var(--border)', borderRadius: 8,
-              padding: 14, fontFamily: 'Courier New, monospace', fontSize: 11.5,
-              color: '#adb5bd', lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-all',
-            }} dangerouslySetInnerHTML={{ __html: HighlightSSML(scene.ssml) }} />
-            <div style={{ marginTop: 10, display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 10 }}>
-              <span>⚡ Speed: <strong style={{ color: 'var(--primary-container)' }}>{scene.id<=2 || scene.id===4 ? '+3%' : '±0%'}</strong></span>
-              <span>🎙️ Voice: <strong style={{ color: 'var(--primary-container)' }}>Aurora (ID Female)</strong></span>
-              <span>⚙️ Stability: <strong style={{ color: 'var(--primary-container)' }}>40%</strong></span>
-              <span>🔊 Similarity: <strong style={{ color: 'var(--primary-container)' }}>80%</strong></span>
-              <span>⏱️ Target: <strong style={{ color: 'var(--primary-container)' }}>{scene.duration}</strong></span>
-            </div>
-          </div>
-
-          {/* Production Info */}
-          <div className="panel">
-            <div className="section-header">Info Produksi — Segmen {scene.id}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: 12 }}>
-              <div><span style={{ color: 'var(--muted)' }}>Timecode</span><br /><strong style={{ color: 'var(--on-surface)' }}>{scene.timecode}</strong></div>
-              <div><span style={{ color: 'var(--muted)' }}>Durasi</span><br /><strong style={{ color: 'var(--on-surface)' }}>{scene.duration}</strong></div>
-              <div><span style={{ color: 'var(--muted)' }}>Mood</span><br /><strong style={{ color: 'var(--on-surface)' }}>{scene.mood}</strong></div>
-              <div><span style={{ color: 'var(--muted)' }}>Jumlah Shot</span><br /><strong style={{ color: 'var(--on-surface)' }}>{scene.shots.length} shots</strong></div>
-            </div>
+            
+            {/* GREEN CIRCLE AREA: Click for full description */}
+            <button
+              onClick={() => setShowDetail(true)}
+              style={{
+                marginTop: 16, width: '100%', padding: '10px', borderRadius: 6,
+                background: 'rgba(134,239,172,0.1)', border: '1px solid rgba(134,239,172,0.3)',
+                color: '#86efac', fontSize: 12, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}
+            >
+              <span>ℹ️</span> Lihat Deskripsi Lengkap
+            </button>
           </div>
         </div>
       </div>
 
-        <div style={{ display:'flex', gap:10, overflow:'auto', paddingBottom:4, marginTop:28 }}>
-          <div className="section-header" style={{ whiteSpace:'nowrap' }}>Cinematic Frame Reference — {scene.title}</div>
+      {/* ── Detail Modal ── */}
+      {showDetail && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 20,
+        }} onClick={() => setShowDetail(false)}>
+          <div className="panel" style={{
+            maxWidth: 500, width: '100%', maxHeight: '80vh', overflow: 'auto',
+            background: 'var(--surface-1)', border: '1px solid var(--border)',
+          }} onClick={(e) => e.stopPropagation()}>
+            <div className="section-header" style={{ marginBottom: 12 }}>Detail Shot: {currentShot.id}</div>
+            <div style={{ marginBottom: 12 }}>
+              <span className="badge orange" style={{ marginRight: 8 }}>{currentShot.id}</span>
+              <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{currentShot.cam}</span>
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--on-variant)', marginBottom: 16, lineHeight: 1.7 }}>
+              {currentShot.note}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+              <div style={{ marginBottom: 4 }}><strong>Scene:</strong> {scene.title}</div>
+              <div style={{ marginBottom: 4 }}><strong>Timecode:</strong> {scene.timecode}</div>
+              <div><strong>Mood:</strong> {scene.mood}</div>
+            </div>
+            <button
+              onClick={() => setShowDetail(false)}
+              style={{
+                marginTop: 16, width: '100%', padding: '10px', borderRadius: 6,
+                background: 'var(--surface-2)', border: '1px solid var(--border)',
+                color: 'var(--on-surface)', cursor: 'pointer',
+              }}
+            >Tutup</button>
+          </div>
         </div>
-        <div style={{ display:'flex', gap:12, overflow:'auto', padding:'10px 2px 14px' }}>
-          {scene.shots.map((s) => (
-            <ShotCard key={s.id} shot={s} scene={scene} />
-          ))}
-        </div>
-        <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginTop:8 }}>
-          <span style={{ fontSize:10, color:'var(--muted)' }}>Generated via Puter.js free image API — 5 cinematic scenes + 25 shot reference images</span>
+      )}
 
+      {/* ── Audio Mix ── */}
+      <div className="panel" style={{ marginBottom: 24 }}>
+        <div className="section-header" style={{ marginBottom: 12 }}>Audio Mix — Segmen {scene.id}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'var(--muted)', width: 70 }}>Music</span>
+            <div style={{ flex: 1, height: 6, background: 'var(--surface-2)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: '70%', height: '100%', background: 'var(--primary-container)' }} />
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--on-variant)' }}>{scene.audio.mus}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'var(--muted)', width: 70 }}>SFX</span>
+            <div style={{ flex: 1, height: 6, background: 'var(--surface-2)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: '40%', height: '100%', background: 'var(--primary-container)' }} />
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--on-variant)' }}>{scene.audio.sfx}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'var(--muted)', width: 70 }}>Narasi</span>
+            <div style={{ flex: 1, height: 6, background: 'var(--surface-2)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '100%', background: 'var(--primary-container)' }} />
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--on-variant)' }}>{scene.audio.nar}</span>
+          </div>
         </div>
+      </div>
 
-      {/* All Shots Reference */}
+      {/* ── Shot Strip ── */}
+      <div className="section-header" style={{ marginBottom: 12 }}>Cinematic Frame Reference — {scene.title}</div>
+      <div style={{ display: 'flex', gap: 12, overflow: 'auto', padding: '10px 2px 14px' }}>
+        {scene.shots.map((s, i) => (
+          <div 
+            key={s.id} 
+            onClick={() => setShotIdx(i)}
+            style={{
+              flex: '0 0 140px', background: i === shotIdx ? 'rgba(245,158,11,0.1)' : 'var(--surface-1)',
+              border: `2px solid ${i === shotIdx ? 'var(--primary-container)' : 'var(--border)'}`,
+              borderRadius: 8, padding: 6, cursor: 'pointer', textAlign: 'left',
+              transition: 'all 120ms', opacity: i === shotIdx ? 1 : 0.6,
+            }}
+          >
+            <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: 6, overflow: 'hidden', background: '#0d1b2e', marginBottom: 5 }}>
+              <img 
+                src={imgSrcForShot(s.id) || ''} 
+                alt={s.id} 
+                loading="lazy"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--primary-container)' }}>
+              {s.id}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 1 }}>{s.cam}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── SSML Viewer ── */}
+      <div className="panel" style={{ marginBottom: 24 }}>
+        <div className="section-header" style={{ marginBottom: 12 }}>ElevenLabs SSML</div>
+        <pre style={{
+          background: 'var(--surface-2)', padding: 12, borderRadius: 6,
+          fontSize: 11, color: 'var(--on-variant)', overflow: 'auto',
+          maxHeight: 150,
+        }}>
+          <code dangerouslySetInnerHTML={{ __html: HighlightSSML(scene.ssml) }} />
+        </pre>
+        <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 8 }}>
+          Voice: Aurora (ID Female) · Stability: 40% · Similarity: 80% · Style: 25%
+        </div>
+      </div>
+
+      {/* ── Shot Reference List ── */}
       <div style={{ marginTop: 28, marginBottom: 32 }}>
-        <div className="section-header">Shot Reference — Semua {SCENES.reduce((a,s) => a + s.shots.length, 0)} Shots</div>
+        <div className="section-header">Shot Reference — Semua {SCENES.reduce((a, s) => a + s.shots.length, 0)} Shots</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {SCENES.map(s => (
             <div key={s.id} className="panel" style={{ padding: '1rem 1.25rem' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: 10, flexWrap:'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 18, fontWeight: 900, color: 'var(--primary-container)' }}>
-                  S{String(s.id).padStart(2,'0')}
+                  S{String(s.id).padStart(2, '0')}
                 </span>
                 <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--on-surface)' }}>{s.title}</span>
                 <span style={{ fontSize: 11, color: 'var(--muted)' }}>{s.timecode}</span>
@@ -405,7 +412,6 @@ export default function StoryboardPage() {
           ))}
         </div>
       </div>
-
     </main>
   );
 }
